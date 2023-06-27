@@ -3,27 +3,37 @@ project(mav_sensors)
 
 add_compile_options(-std=c++17)
 
-find_package(catkin REQUIRED COMPONENTS roscpp mav_imu lpp)
+find_package(catkin REQUIRED COMPONENTS roscpp lpp)
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES mav_sensors
-  CATKIN_DEPENDS roscpp mav_imu lpp
+        INCLUDE_DIRS include
+        LIBRARIES mav_sensors
+        CATKIN_DEPENDS roscpp lpp
 )
 
 ###########
 ## Build ##
 ###########
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp)
+add_executable(${PROJECT_NAME}_node src/main.cpp
+        src/core/sensor_config.cpp
+        src/core/sensor.cpp
+        src/core/driver.cpp
+
+        src/core/protocols/Spi.cpp
+
+        src/core/sensor_types/FluidPressure.cpp
+
+        src/impl/barometer/bmp390.cpp
+        include/mav_sensors/impl/barometer/bmp390.h)
 
 target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
-)
+        ${catkin_LIBRARIES}
+        )
 
 #############
 ## Install ##

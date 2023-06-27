@@ -8,7 +8,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
   <depend>lpp</depend>
-  <depend>mav_imu</depend>
   <export>
   </export>
 </package>

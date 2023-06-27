@@ -10,31 +10,23 @@
 #include "sensor_config.h"
 
 class SensorType {
-
+ typedef void ReturnType;
 };
 
 template <typename D, typename... S>
 class Sensor {
   static_assert(std::is_base_of<Driver, D>(), "Driver class does not inherit driver");
-  static_assert((std::is_base_of_v<SensorType, S> && ...), "Invalid.");
+  static_assert((std::is_base_of_v<SensorType, S> && ...), "One or more SensorTypes do not inherit from SensorType.");
 
  public:
-  explicit Sensor(Driver* drv) : drv_(drv) {};
+  using TupleReturnType = std::tuple<typename S::ReturnType...>; //Tuple with values from all sensors
+  template <typename... T>
+  static constexpr bool IsValidReturnType = ((std::is_same<T, S>::value || ...) && sizeof...(T) > 0);
 
-  bool open() = 0;
+  static_assert(IsValidReturnType<S...>);
 
-  template <typename T>
-  typename std::enable_if<(std::is_same<T, S>::value || ...), T>::type::ReturnType read() {
-    return {};
-  }
-
-  template <typename...T>
-  std::tuple<typename std::enable_if<((std::is_same<T, S>::value || ...) && sizeof...(T) > 1), T>::type::ReturnType...> read() {
-    return {};
-  }
-
-  bool close() = 0;
-
- private:
-  Driver* drv_ {nullptr};
+  virtual bool open() = 0;
+  virtual TupleReturnType read() = 0;
+  virtual void applyConfig(const SensorConfig &sensorConfig) {};
+  virtual bool close() = 0;
 };
