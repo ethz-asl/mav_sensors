@@ -19,7 +19,9 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp
+add_compile_definitions(MODE_LPP)
+
+add_library(${PROJECT_NAME}
         src/core/sensor_config.cpp
         src/core/sensor.cpp
         src/core/driver.cpp
@@ -29,10 +31,16 @@ add_executable(${PROJECT_NAME}_node src/main.cpp
         src/core/sensor_types/FluidPressure.cpp
 
         src/impl/barometer/bmp390.cpp
-        include/mav_sensors/impl/barometer/bmp390.h)
+        )
+
+target_link_libraries(${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+
+add_executable(${PROJECT_NAME}_node src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME}_node
-        ${catkin_LIBRARIES}
+        ${PROJECT_NAME}
         )
 
 #############
