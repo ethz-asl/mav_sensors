@@ -52,7 +52,16 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     if (!drv_->setMode(SPI_MODE_3)) {
       return false;
     }
+    usleep(1e3);
 
+    std::vector<byte> res = drv_->xfer({0x80}, 2, 1000000);
+
+    if (res[1] != 0x60) {
+      LOG(E, "Chip ID read failed");
+      return false;
+    }
+    LOG(I, "Chip ID: " << std::hex << +res[0] << " " << +res[1]);
+    usleep(1e3);
     return true;
   }
 
@@ -80,7 +89,7 @@ byte BMP390<HardwareProtocol>::setEightBit(byte byte) {
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
-  std::vector<byte> a = drv_->xfer({setEightBit(TEMPERATURE_DATA)}, 3, 1000000);
+  std::vector<byte> a = drv_->xfer({setEightBit(TEMPERATURE_DATA), 0x00}, 2, 1000000);
 
   if (a.empty()) {
     LOG(E, "Temperature read failed");
@@ -88,13 +97,14 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
   }
 
   LOG(I, "a size: " << a.size());
-  LOG(I, "Temp: " << std::hex << +a[0] << " " << +a[1] << " " << +a[2]);
+  LOG(I, "Temp: " << std::hex << +a[0] << " " << +a[1]);
   return 0;
 }
 
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
-  std::vector<byte> a = drv_->xfer({setEightBit(PRESSURE_DATA)}, 3, 1000000);
+  std::vector<byte> a = drv_->xfer({setEightBit(PRESSURE_DATA), 0x00}, 2, 1000000);
+  LOG(I, "Pressure: " << std::hex << +a[0] << " " << +a[1]);
   return 0;
 }
 
