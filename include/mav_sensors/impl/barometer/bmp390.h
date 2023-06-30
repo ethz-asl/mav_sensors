@@ -18,6 +18,9 @@
 #include "mav_sensors/core/sensor_config.h"
 #include "mav_sensors/core/sensor_types/FluidPressure.h"
 #include "mav_sensors/core/sensor_types/Temperature.h"
+#include "mav_sensors/impl/barometer/bmp390_spi_ids.h"
+
+using namespace bmp390;
 
 template <typename HardwareProtocol>
 class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
@@ -26,6 +29,11 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 
   static_assert(std::is_same_v<HardwareProtocol, Spi>, "This sensor supports Spi only.");
 
+  /**
+   *
+   * @param sensorConfig
+   *
+   */
   explicit BMP390(SensorConfig sensorConfig) : cfg_(std::move(sensorConfig)){};
 
   bool open() override {
@@ -49,7 +57,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   }
 
   typename super::TupleReturnType read() override {
-    return std::make_tuple(0, readTemperature());
+    return std::make_tuple(readPressure(), readTemperature());
   }
 
   template <typename... T>
@@ -58,20 +66,48 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   bool close() override { return false; }
 
  private:
+  byte setEightBit(byte byte);
   Temperature::ReturnType readTemperature();
+  FluidPressure::ReturnType readPressure();
   Spi* drv_{nullptr};
   SensorConfig cfg_;
 };
 
 template <typename HardwareProtocol>
-Temperature::ReturnType BMP390<HardwareProtocol>::readTemperature() {
-  std::vector<byte> a = drv_->xfer({0x80}, 2, 1000000);
+byte BMP390<HardwareProtocol>::setEightBit(byte byte) {
+  return byte | 0x80;
+}
+
+template <>
+Temperature::ReturnType BMP390<Spi>::readTemperature() {
+  std::vector<byte> a = drv_->xfer({setEightBit(TEMPERATURE_DATA)}, 3, 1000000);
+
+  if (a.empty()) {
+    LOG(E, "Temperature read failed");
+    return {};
+  }
+
   LOG(I, "a size: " << a.size());
-  LOG(I, "Chip ID: " << std::hex << +a[0] << " " << +a[1]);
+  LOG(I, "Temp: " << std::hex << +a[0] << " " << +a[1] << " " << +a[2]);
   return 0;
 }
-/*
-template<> template<> std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
-    return {};
+
+template <>
+FluidPressure::ReturnType BMP390<Spi>::readPressure() {
+  std::vector<byte> a = drv_->xfer({setEightBit(PRESSURE_DATA)}, 3, 1000000);
+  return 0;
 }
-*/
+
+template <>
+template <>
+std::tuple<Temperature::ReturnType> BMP390<Spi>::read<Temperature>() {
+  readTemperature();
+  return {};
+}
+
+template <>
+template <>
+std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
+  readPressure();
+  return {};
+}

@@ -30,8 +30,7 @@ add_library(${PROJECT_NAME}
 
         src/core/sensor_types/FluidPressure.cpp
 
-        src/impl/barometer/bmp390.cpp
-        )
+        src/impl/barometer/bmp390.cpp)
 
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}

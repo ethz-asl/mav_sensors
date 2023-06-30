@@ -16,11 +16,15 @@ int main(int argc, char** argv) {
 
 
   BMP390<Spi> bmp390(sensorConfig);
-  bmp390.open();
+  if (!bmp390.open()) {
+    LOG(F, "Open failed");
+    return 1;
+  }
 
-
-  std::tuple<FluidPressure::ReturnType, Temperature::ReturnType> a = bmp390.read();
-  double val = std::get<0>(a);
+  auto a = bmp390.read();
+  bmp390.read<FluidPressure>();
+  bmp390.read<Temperature>();
+  double val = std::get<0>(a).value();
   LOG(I, "Value: " << val);
   bmp390.close();
 }
