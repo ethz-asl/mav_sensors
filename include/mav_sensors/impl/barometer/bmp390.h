@@ -65,8 +65,9 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 
 template <typename HardwareProtocol>
 Temperature::ReturnType BMP390<HardwareProtocol>::readTemperature() {
-  std::vector<byte> a = drv_->xfer({0x04, 0x00, 0x00, 0x00}, 4, 1000000);
-  LOG(I, "Test: " << std::hex << a[0] << " " << a[1] << " " << a[2] << " " << a[3]);
+  std::vector<byte> a = drv_->xfer({0x80}, 2, 1000000);
+  LOG(I, "a size: " << a.size());
+  LOG(I, "Chip ID: " << std::hex << +a[0] << " " << +a[1]);
   return 0;
 }
 /*

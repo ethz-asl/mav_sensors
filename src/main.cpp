@@ -12,7 +12,7 @@
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
   SensorConfig sensorConfig;
-  sensorConfig.set("path", "/dev/spidev1.0");
+  sensorConfig.set("path", "/dev/spidev2.0");
 
 
   BMP390<Spi> bmp390(sensorConfig);
