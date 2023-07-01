@@ -1,5 +1,5 @@
 //
-// Created by acey on 01.07.2023
+// Created by brik on 01.07.2023
 //
 
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
