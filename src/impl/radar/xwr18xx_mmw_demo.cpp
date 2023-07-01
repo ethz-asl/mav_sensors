@@ -6,7 +6,9 @@
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Read data from serial buffer.
-  
+  std::vector<byte> data(1);
+  auto n = drv_data_.read(&data);
+  LOG(I, n > 0, "0x" << std::hex << +data[0]);
   // Check data for magic key.
   // Parse data.
   return std::make_tuple(CfarDetections::ReturnType());
