@@ -12,10 +12,10 @@
 class CfarDetections : public SensorType {
  public:
   struct CfarDetection {
-    double x{std::nan};
-    double y{std::nan};
-    double z{std::nan};
-    double velocity{std::nan};
+    double x{std::nan("1")};
+    double y{std::nan("1")};
+    double z{std::nan("1")};
+    double velocity{std::nan("1")};
   };
-  typedef std::vector<CFarDetection> ReturnType;
+  typedef std::vector<CfarDetection> ReturnType;
 };

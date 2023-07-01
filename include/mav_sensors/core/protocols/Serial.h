@@ -14,9 +14,11 @@ typedef unsigned char byte;
 
 class Serial : public Driver {
  public:
-  explicit Serial(std::string path);
+  explicit Serial();
   bool open() override;
   bool close() override;
+
+  void setPath(std::string path);
 
   //! Setters cflag
   [[nodiscard]] bool setControlParityBit(bool bit = false) const;
@@ -51,5 +53,5 @@ class Serial : public Driver {
  private:
   bool is_open_{false};
   int fd_{};
-  std::string path_;
+  std::string path_{"/dev/ttyUSB0"};
 };

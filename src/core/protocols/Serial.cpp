@@ -10,7 +10,9 @@
 
 // Created by brik on 01.07.23.
 
-Serial::Serial(std::string path) : path_(std::move(path)) {}
+Serial::Serial() {}
+
+void Serial::setPath(std::string path) { path_ = std::move(path); }
 
 bool Serial::open() {
   fd_ = ::open(path_.data(), O_RDWR | O_NOCTTY | O_NONBLOCK);

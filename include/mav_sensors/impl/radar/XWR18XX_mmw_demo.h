@@ -4,56 +4,61 @@
 
 #pragma once
 
+#include <log++.h>
+
 #include "mav_sensors/core/protocols/Serial.h"
+#include "mav_sensors/core/sensor.h"
+#include "mav_sensors/core/sensor_types/CfarDetections.h"
 
-template <typename HardwareProtocol>
-class XWR18XXMmwDemo : public Sensor<HardwareProtocol, Temperature> {
+class XWR18XXMmwDemo : public Sensor<Serial, CfarDetections> {
  public:
-  typedef Sensor<HardwareProtocol, FluidPressure, Temperature> super;
+  typedef Sensor<Serial, CfarDetections> super;
 
-  static_assert(std::is_same_v<HardwareProtocol, Spi>, "This sensor supports Spi only.");
-
-  explicit BMP390(SensorConfig sensorConfig) : cfg_(std::move(sensorConfig)){};
+  explicit XWR18XXMmwDemo(SensorConfig sensor_cfg) : cfg_(std::move(sensor_cfg)){};
 
   bool open() override {
-    std::optional<std::string> pathOpt = cfg_.get("path");
-
-    if (!pathOpt.has_value()) {
-      LOG(E, "Sensor config must have field path");
+    std::optional<std::string> path_cfg = cfg_.get("path_cfg");
+    if (!path_cfg.has_value()) {
+      LOG(E, "Sensor config must have field path_cfg");
       return false;
     }
 
-    drv_ = new Spi(pathOpt.value());
-    if (!drv_->open()) {
+    std::optional<std::string> path_data = cfg_.get("path_data");
+    if (!path_data.has_value()) {
+      LOG(E, "Sensor config must have field path_data");
       return false;
     }
 
-    if (!drv_->setMode(SPI_MODE_3)) {
-      return false;
-    }
+    drv_cfg_.setPath(path_cfg.value());
+    if (!drv_cfg_.open()) return false;
+
+    drv_data_.setPath(path_data.value());
+    if (!drv_data_.open()) return false;
+
+    // Default mmw uart config is: readTimeout = UART_WAIT_FOREVER; writeTimeout =
+    // UART_WAIT_FOREVER; readReturnMode = UART_RETURN_NEWLINE; readDataMode = UART_DATA_TEXT;
+    // writeDataMode = UART_DATA_TEXT; readEcho = UART_ECHO_ON; baudRate = 115200; dataLength =
+    // UART_LEN_8; stopBits = UART_STOP_ONE; parityType = UART_PAR_NONE;
+
+    if (!drv_cfg_.setControlBaudRate(115200)) return false;
+    if (!drv_data_.setControlBaudRate(921600)) return false;
 
     return true;
   }
 
-  typename super::TupleReturnType read() override {
-    return std::make_tuple(0, readTemperature());
-  }
+  typename super::TupleReturnType read() override;
 
   template <typename... T>
   std::tuple<typename T::ReturnType...> read() = delete;
 
-  bool close() override { return false; }
+  bool close() override {
+    bool success = drv_cfg_.close();
+    success &= drv_data_.close();
+    return success;
+  }
 
  private:
-  Temperature::ReturnType readTemperature();
-  Spi* drv_{nullptr};
+  Serial drv_cfg_;
+  Serial drv_data_;
   SensorConfig cfg_;
 };
-
-template <typename HardwareProtocol>
-Temperature::ReturnType BMP390<HardwareProtocol>::readTemperature() {
-  std::vector<byte> a = drv_->xfer({0x80}, 2, 1000000);
-  LOG(I, "a size: " << a.size());
-  LOG(I, "Chip ID: " << std::hex << +a[0] << " " << +a[1]);
-  return 0;
-}
