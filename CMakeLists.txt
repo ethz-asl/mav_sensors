@@ -32,7 +32,7 @@ add_library(${PROJECT_NAME}
         src/core/sensor_types/FluidPressure.cpp
 
         src/impl/barometer/bmp390.cpp
-        src/impl/radar/XWR18XX_mmw_demo.cpp
+        src/impl/radar/xwr18xx_mmw_demo.cpp
         )
 
 target_link_libraries(${PROJECT_NAME}

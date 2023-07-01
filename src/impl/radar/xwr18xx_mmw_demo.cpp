@@ -2,13 +2,13 @@
 // Created by acey on 01.07.2023
 //
 
-#include "mav_sensors/impl/radar/XWR18XX_mmw_demo.h"
+#include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
 
-typename XWR18XXMmwDemo::super::TupleReturnType XWR18XXMmwDemo::read() {
+typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   return std::make_tuple(CfarDetections::ReturnType());
 }
 
-bool XWR18XXMmwDemo::open() {
+bool Xwr18XxMmwDemo::open() {
     std::optional<std::string> path_cfg = cfg_.get("path_cfg");
     if (!path_cfg.has_value()) {
         LOG(E, "Sensor config must have field path_cfg");

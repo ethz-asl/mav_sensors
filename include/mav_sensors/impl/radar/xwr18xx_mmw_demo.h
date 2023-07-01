@@ -10,11 +10,11 @@
 #include "mav_sensors/core/sensor.h"
 #include "mav_sensors/core/sensor_types/CfarDetections.h"
 
-class XWR18XXMmwDemo : public Sensor<Serial, CfarDetections> {
+class Xwr18XxMmwDemo : public Sensor<Serial, CfarDetections> {
  public:
   typedef Sensor<Serial, CfarDetections> super;
 
-  explicit XWR18XXMmwDemo(SensorConfig sensor_cfg) : cfg_(std::move(sensor_cfg)){};
+  explicit Xwr18XxMmwDemo(SensorConfig sensor_cfg) : cfg_(std::move(sensor_cfg)){};
 
   bool open() override;
 
