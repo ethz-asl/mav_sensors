@@ -53,7 +53,3 @@ class Serial : public Driver {
   int fd_{};
   std::string path_;
 };
-
-// Defaults values are: readTimeout = UART_WAIT_FOREVER; writeTimeout = UART_WAIT_FOREVER;
-// readReturnMode = UART_RETURN_NEWLINE; readDataMode = UART_DATA_TEXT; writeDataMode =
-// UART_DATA_TEXT; readEcho = UART_ECHO_ON;
