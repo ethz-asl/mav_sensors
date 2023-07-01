@@ -17,6 +17,8 @@ class Serial : public Driver {
   explicit Serial();
   bool open() override;
   bool close() override;
+  ssize_t read(std::vector<byte>* data);
+  ssize_t write(const std::vector<byte>& data);
 
   void setPath(std::string path);
 
@@ -48,7 +50,7 @@ class Serial : public Driver {
   //! Getters
   [[nodiscard]] bool isOpen() const;
   [[nodiscard]] int getFd() const;
-  [[nodiscard]] const std::string &getPath() const;
+  [[nodiscard]] const std::string& getPath() const;
 
  private:
   bool is_open_{false};

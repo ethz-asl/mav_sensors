@@ -45,6 +45,9 @@ target_link_libraries(${PROJECT_NAME}_node
         ${PROJECT_NAME}
         )
 
+add_executable(xwr18xx_mmw_demo src/nodes/xwr18xx_mmw_demo_node.cpp)
+target_link_libraries(xwr18xx_mmw_demo ${PROJECT_NAME})
+
 #############
 ## Install ##
 #############

@@ -11,6 +11,7 @@
 // Created by brik on 01.07.23.
 
 Serial::Serial() {}
+Serial::~Serial() { ::close(fd_); }
 
 void Serial::setPath(std::string path) { path_ = std::move(path); }
 
@@ -45,6 +46,19 @@ bool Serial::open() {
   if (!setOutputProcessing()) return false;
 
   return true;
+}
+
+ssize_t Serial::read(std::vector<byte>* data) {
+  assert(data != nullptr);
+  ssize_t n = ::read(fd_, data->data(), data->size());
+  LOG(E, n < 0, "Error on read: " << strerror(errno));
+  return n;
+}
+
+ssize_t Serial::write(const std::vector<byte>& data) {
+  ssize_t n = ::write(fd_, data.data(), data.size());
+  LOG(E, n < 0, "Error on write: " << strerror(errno));
+  return n;
 }
 
 bool Serial::setControlParityBit(bool bit) const {

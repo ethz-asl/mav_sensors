@@ -5,6 +5,10 @@
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
+  // Read data from serial buffer.
+  
+  // Check data for magic key.
+  // Parse data.
   return std::make_tuple(CfarDetections::ReturnType());
 }
 
