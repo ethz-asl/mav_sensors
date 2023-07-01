@@ -16,7 +16,7 @@ Serial::~Serial() { ::close(fd_); }
 void Serial::setPath(std::string path) { path_ = std::move(path); }
 
 bool Serial::open() {
-  fd_ = ::open(path_.data(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+  fd_ = ::open(path_.data(), O_RDWR);
   if (fd_ < 0) {
     LOG(E, "Error on open: " << strerror(errno));
     return false;
