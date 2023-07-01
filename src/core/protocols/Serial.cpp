@@ -19,6 +19,15 @@ bool Serial::open() {
     return false;
   }
   is_open_ = true;
+
+  // Set default flags.
+  if (!setParityBit()) return false;
+  if (!setStopBit()) return false;
+  if (!setNumberOfBitsPerByte()) return false;
+  if (!setFlowControlBit()) return false;
+  if (!setLocalBit()) return false;
+  if (!setReadBit()) return false;
+
   return true;
 }
 

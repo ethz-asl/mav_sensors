@@ -18,11 +18,11 @@ class Serial : public Driver {
 
   [[nodiscard]] bool setParityBit(bool bit = false) const;
   [[nodiscard]] bool setStopBit(bool bit = false) const;
-  [[nodiscart]] bool setNumberOfBitsPerByte(int bits = 8) const;
+  [[nodiscard]] bool setNumberOfBitsPerByte(int bits = 8) const;
   [[nodiscard]] bool setBaudRate(uint32_t baud) const;
   [[nodiscard]] bool setFlowControlBit(bool bit = false) const;
-  [[nodiscart]] bool setLocalBit(bool bit = true) const;
-  [[nodiscart]] bool setReadBit(bool bit = true) const;
+  [[nodiscard]] bool setLocalBit(bool bit = true) const;
+  [[nodiscard]] bool setReadBit(bool bit = true) const;
 
   ~Serial();
 
