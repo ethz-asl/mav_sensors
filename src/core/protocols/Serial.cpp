@@ -39,6 +39,9 @@ bool Serial::open() {
   if (!setSoftwareFlowControl()) return false;
   if (!setSpecialCharacterProcessing()) return false;
 
+  // Set default oflags.
+  if (!setOutputProcessing()) return false;
+
   return true;
 }
 
@@ -329,6 +332,26 @@ bool Serial::setSpecialCharacterProcessing(bool bit) const {
 
   if (ioctl(fd_, TCSETS2, &tty) < 0) {
     LOG(E, "Error on TCSETS2 for special character processing: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setOutputProcessing(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 output processing: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_oflag |= OPOST | ONLCR;
+  } else {
+    tty.c_oflag &= ~(OPOST | ONLCR);
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 output processing: " << strerror(errno));
     return false;
   }
   return true;

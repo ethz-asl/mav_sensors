@@ -36,6 +36,9 @@ class Serial : public Driver {
   [[nodiscard]] bool setSoftwareFlowControl(bool bit = false) const;
   [[nodiscard]] bool setSpecialCharacterProcessing(bool bit = false) const;
 
+  //! Setters oflag
+  [[nodiscard]] bool setOutputProcessing(bool bit = false) const;
+
   ~Serial();
 
   //! Getters
