@@ -16,13 +16,22 @@ class Serial : public Driver {
   bool open() override;
   bool close() override;
 
-  [[nodiscard]] bool setParityBit(bool bit = false) const;
-  [[nodiscard]] bool setStopBit(bool bit = false) const;
-  [[nodiscard]] bool setNumberOfBitsPerByte(int bits = 8) const;
-  [[nodiscard]] bool setBaudRate(uint32_t baud) const;
-  [[nodiscard]] bool setFlowControlBit(bool bit = false) const;
-  [[nodiscard]] bool setLocalBit(bool bit = true) const;
-  [[nodiscard]] bool setReadBit(bool bit = true) const;
+  //! Setters cflag
+  [[nodiscard]] bool setControlParityBit(bool bit = false) const;
+  [[nodiscard]] bool setControlStopBit(bool bit = false) const;
+  [[nodiscard]] bool setControlNumberOfBitsPerByte(int bits = 8) const;
+  [[nodiscard]] bool setControlBaudRate(uint32_t baud) const;
+  [[nodiscard]] bool setControlFlowControl(bool bit = false) const;
+  [[nodiscard]] bool setControlLocal(bool bit = true) const;
+  [[nodiscard]] bool setControlRead(bool bit = true) const;
+
+  //! Setters lflag
+  [[nodiscard]] bool setLocalCanonicalMode(bool bit = false) const;
+  [[nodiscard]] bool setLocalEcho(bool bit = false) const;
+  [[nodiscard]] bool setLocalEchoErase(bool bit = false) const;
+  [[nodiscart]] bool setLocalEchoNewLine(bool bit = false) const;
+  [[nodiscard]] bool setLocalSignal(bool bit = false) const;
+  
 
   ~Serial();
 

@@ -20,13 +20,20 @@ bool Serial::open() {
   }
   is_open_ = true;
 
-  // Set default flags.
-  if (!setParityBit()) return false;
-  if (!setStopBit()) return false;
-  if (!setNumberOfBitsPerByte()) return false;
-  if (!setFlowControlBit()) return false;
-  if (!setLocalBit()) return false;
-  if (!setReadBit()) return false;
+  // Set default cflags.
+  if (!setControlParityBit()) return false;
+  if (!setControlStopBit()) return false;
+  if (!setControlNumberOfBitsPerByte()) return false;
+  if (!setControlFlowControl()) return false;
+  if (!setControlLocal()) return false;
+  if (!setControlRead()) return false;
+
+  // Set default lflags.
+  if (!setLocalCanonicalMode()) return false;
+  if (!setLocalEcho()) return false;
+  if (!setLocalEchoErase()) return false;
+  if (!setLocalEchoNewLine()) return false;
+  if (!setLocalSignal()) return false;
 
   return true;
 }
@@ -42,7 +49,7 @@ bool Serial::close() {
   return true;
 }
 
-bool Serial::setParityBit(bool bit) const {
+bool Serial::setControlParityBit(bool bit) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for parity bit: " << strerror(errno));
@@ -62,7 +69,7 @@ bool Serial::setParityBit(bool bit) const {
   return true;
 }
 
-bool Serial::setStopBit(bool bit) const {
+bool Serial::setControlStopBit(bool bit) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for stop bit: " << strerror(errno));
@@ -82,7 +89,7 @@ bool Serial::setStopBit(bool bit) const {
   return true;
 }
 
-bool Serial::setNumberOfBitsPerByte(int bits) const {
+bool Serial::setControlNumberOfBitsPerByte(int bits) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for number of bits per byte: " << strerror(errno));
@@ -115,7 +122,7 @@ bool Serial::setNumberOfBitsPerByte(int bits) const {
   return true;
 }
 
-bool Serial::setBaudRate(uint32_t baud) const {
+bool Serial::setControlBaudRate(uint32_t baud) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for baud rate: " << strerror(errno));
@@ -134,7 +141,7 @@ bool Serial::setBaudRate(uint32_t baud) const {
   return true;
 }
 
-bool Serial::setFlowControlBit(bool bit) const {
+bool Serial::setControlFlowControl(bool bit) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for flow control bit: " << strerror(errno));
@@ -154,7 +161,7 @@ bool Serial::setFlowControlBit(bool bit) const {
   return true;
 }
 
-bool Serial::setLocalBit(bool bit) const {
+bool Serial::setControlLocal(bool bit) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local bit: " << strerror(errno));
@@ -174,7 +181,7 @@ bool Serial::setLocalBit(bool bit) const {
   return true;
 }
 
-bool Serial::setReadBit(bool bit) const {
+bool Serial::setControlRead(bool bit) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for read bit: " << strerror(errno));
@@ -191,6 +198,115 @@ bool Serial::setReadBit(bool bit) const {
     LOG(E, "Error on TCSETS2 for read bit: " << strerror(errno));
     return false;
   }
+  return true;
+}
+
+bool Serial::setLocalCanonicalMode(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for local canonical mode bit: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_lflag |= ICANON;
+  } else {
+    tty.c_lflag &= ~ICANON;
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for local canonical mode bit: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setLocalEcho(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for local echo bit: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_lflag |= ECHO;
+  } else {
+    tty.c_lflag &= ~ECHO;
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for local echo bit: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setLocalEchoErase(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for local echo erase bit: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_lflag |= ECHOE;
+  } else {
+    tty.c_lflag &= ~ECHOE;
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for local echo erase bit: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setLocalEchoNewLine(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for local echo new line bit: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_lflag |= ECHONL;
+  } else {
+    tty.c_lflag &= ~ECHONL;
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for local echo new line bit: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setLocalSignal(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for local signal bit: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_lflag |= ISIG;
+  } else {
+    tty.c_lflag &= ~ISIG;
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for local signal bit: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::close() {
+  if (::close(fd_) != 0) {
+    LOG(I, "Error closing fd: " << strerror(errno));
+    return false;
+  }
+  is_open_ = false;
   return true;
 }
 
