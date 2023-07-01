@@ -26,6 +26,7 @@ add_library(${PROJECT_NAME}
         src/core/sensor.cpp
         src/core/driver.cpp
 
+        src/core/protocols/Serial.cpp
         src/core/protocols/Spi.cpp
 
         src/core/sensor_types/FluidPressure.cpp
