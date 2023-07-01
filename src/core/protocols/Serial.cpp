@@ -35,17 +35,10 @@ bool Serial::open() {
   if (!setLocalEchoNewLine()) return false;
   if (!setLocalSignal()) return false;
 
-  return true;
-}
+  // Set default iflags.
+  if (!setSoftwareFlowControl()) return false;
+  if (!setSpecialCharacterProcessing()) return false;
 
-bool Serial::close() {
-  if (is_open_) {
-    if (::close(fd_) < 0) {
-      LOG(E, "Error on close: " << strerror(errno));
-      return false;
-    }
-    is_open_ = false;
-  }
   return true;
 }
 
@@ -296,6 +289,46 @@ bool Serial::setLocalSignal(bool bit) const {
 
   if (ioctl(fd_, TCSETS2, &tty) < 0) {
     LOG(E, "Error on TCSETS2 for local signal bit: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setSoftwareFlowControl(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for software flow control: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_iflag |= IXON | IXOFF | IXANY;
+  } else {
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY);
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for software flow control: " << strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Serial::setSpecialCharacterProcessing(bool bit) const {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for special character processing: " << strerror(errno));
+    return false;
+  }
+
+  if (bit) {
+    tty.c_iflag |= IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL;
+  } else {
+    tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+  }
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for special character processing: " << strerror(errno));
     return false;
   }
   return true;

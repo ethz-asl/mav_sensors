@@ -29,9 +29,12 @@ class Serial : public Driver {
   [[nodiscard]] bool setLocalCanonicalMode(bool bit = false) const;
   [[nodiscard]] bool setLocalEcho(bool bit = false) const;
   [[nodiscard]] bool setLocalEchoErase(bool bit = false) const;
-  [[nodiscart]] bool setLocalEchoNewLine(bool bit = false) const;
+  [[nodiscard]] bool setLocalEchoNewLine(bool bit = false) const;
   [[nodiscard]] bool setLocalSignal(bool bit = false) const;
-  
+
+  //! Setters iflag
+  [[nodiscard]] bool setSoftwareFlowControl(bool bit = false) const;
+  [[nodiscard]] bool setSpecialCharacterProcessing(bool bit = false) const;
 
   ~Serial();
 
