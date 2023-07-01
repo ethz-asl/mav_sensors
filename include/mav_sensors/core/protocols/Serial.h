@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include <asm/termbits.h>
+
 #include "mav_sensors/core/driver.h"
 
 typedef unsigned char byte;
@@ -20,7 +22,7 @@ class Serial : public Driver {
   [[nodiscard]] bool setControlParityBit(bool bit = false) const;
   [[nodiscard]] bool setControlStopBit(bool bit = false) const;
   [[nodiscard]] bool setControlNumberOfBitsPerByte(int bits = 8) const;
-  [[nodiscard]] bool setControlBaudRate(uint32_t baud) const;
+  [[nodiscard]] bool setControlBaudRate(speed_t baud) const;
   [[nodiscard]] bool setControlFlowControl(bool bit = false) const;
   [[nodiscard]] bool setControlLocal(bool bit = true) const;
   [[nodiscard]] bool setControlRead(bool bit = true) const;

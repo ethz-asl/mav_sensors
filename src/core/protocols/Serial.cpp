@@ -118,7 +118,7 @@ bool Serial::setControlNumberOfBitsPerByte(int bits) const {
   return true;
 }
 
-bool Serial::setControlBaudRate(uint32_t baud) const {
+bool Serial::setControlBaudRate(speed_t baud) const {
   struct termios2 tty;
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for baud rate: " << strerror(errno));
