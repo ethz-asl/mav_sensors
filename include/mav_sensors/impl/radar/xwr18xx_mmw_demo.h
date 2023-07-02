@@ -30,6 +30,16 @@ class Xwr18XxMmwDemo : public Sensor<Serial, CfarDetections> {
   }
 
  private:
+  template <typename T>
+  T parse(const std::vector<byte>& data, size_t* offset) {
+    T value = 0;
+    for (size_t i = sizeof(T); i-- > 0;) {
+      value |= data[*offset + i] << (8 * i);
+    }
+    *offset += sizeof(T);
+    return value;
+  }
+
   Serial drv_cfg_;
   Serial drv_data_;
   SensorConfig cfg_;
