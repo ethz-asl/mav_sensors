@@ -19,7 +19,7 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-add_compile_definitions(MODE_LPP)
+add_compile_definitions(MODE_ROSLOG)
 
 add_library(${PROJECT_NAME}
         src/core/sensor_config.cpp
