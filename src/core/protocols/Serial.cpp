@@ -382,6 +382,15 @@ bool Serial::close() {
   return true;
 }
 
+int Serial::bytesAvailable() const {
+  int bytes_available = 0;
+  if (::ioctl(fd_, FIONREAD, &bytes_available) < 0) {
+    LOG(E, "Error on FIONREAD: " << strerror(errno));
+    return -1;
+  }
+  return bytes_available;
+}
+
 // Defaults values are: readTimeout = UART_WAIT_FOREVER; writeTimeout = UART_WAIT_FOREVER;
 // readReturnMode = UART_RETURN_NEWLINE; readDataMode = UART_DATA_TEXT; writeDataMode =
 // UART_DATA_TEXT; readEcho = UART_ECHO_ON; baudRate = 115200; dataLength = UART_LEN_8; stopBits =

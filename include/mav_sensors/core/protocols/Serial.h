@@ -51,6 +51,7 @@ class Serial : public Driver {
   [[nodiscard]] bool isOpen() const;
   [[nodiscard]] int getFd() const;
   [[nodiscard]] const std::string& getPath() const;
+  [[nodiscard]] int bytesAvailable() const;
 
  private:
   bool is_open_{false};
