@@ -41,9 +41,8 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   if (!new_data) return std::make_tuple(CfarDetections::ReturnType());
 
   // Read header.
-  // TODO: blocking read.
-  std::vector<byte> header(8 * sizeof(uint32_t));
-  n = drv_data_.read(&header);
+  std::vector<byte> header(kHeaderSize);
+  n = drv_data_.blockingRead(&header, header.size(), kTimeout);
   if (n != header.size()) {
     LOG(E, "Failed to read header");
     return std::make_tuple(CfarDetections::ReturnType());
@@ -52,7 +51,8 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Parse header.
   size_t offset = 0;
   auto version = parse<uint32_t>(header, &offset);
-  LOG(I, "Version: " << std::hex << +version);
+  LOG(W, version != 0x03060000,
+      "XWR18XX firmware not version 0x" << std::hex << 0x03060000 << " but 0x" << +version);
   uint32_t totalPacketLen = parse<uint32_t>(header, &offset);
   LOG(I, "Total packet length: " << totalPacketLen);
   uint32_t platform = parse<uint32_t>(header, &offset);
@@ -67,6 +67,24 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   LOG(I, "Number of TLVs: " << numTLVs);
   uint32_t subFrameNumber = parse<uint32_t>(header, &offset);
   LOG(I, "Subframe number: " << subFrameNumber);
+
+  // Read TLV.
+  std::vector<byte> tlv(totalPacketLen - header.size() - 4 * sizeof(uint16_t));
+  size_t bytes_missing = tlv.size();
+
+  while (bytes_missing) {
+    LOG(I, "Reading TLV, " << bytes_missing << " bytes missing");
+    size_t n_chunk = bytes_missing > 0xFF ? 0xFF : bytes_missing;
+    std::vector<byte> chunk(n_chunk);
+    n = drv_data_.blockingRead(&chunk, n_chunk, kTimeout);
+    if (n != n_chunk) {
+      LOG(E, "Failed to read TLV: " << n << " out of " << n_chunk << " bytes read");
+      return std::make_tuple(CfarDetections::ReturnType());
+    }
+    LOG(I, "Read " << n << " bytes of TLV");
+    std::copy(chunk.begin(), chunk.end(), tlv.begin() + tlv.size() - bytes_missing);
+    bytes_missing -= n;
+  }
 
   // Parse data.
   return std::make_tuple(CfarDetections::ReturnType());

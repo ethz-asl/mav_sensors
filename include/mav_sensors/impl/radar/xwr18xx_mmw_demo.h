@@ -43,4 +43,7 @@ class Xwr18XxMmwDemo : public Sensor<Serial, CfarDetections> {
   Serial drv_cfg_;
   Serial drv_data_;
   SensorConfig cfg_;
+
+  static constexpr uint8_t kTimeout = 1;
+  static constexpr size_t kHeaderSize = 8 * sizeof(uint32_t);
 };

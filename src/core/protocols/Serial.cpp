@@ -55,6 +55,37 @@ ssize_t Serial::read(std::vector<byte>* data) {
   return n;
 }
 
+ssize_t Serial::blockingRead(std::vector<byte>* data, uint8_t size, uint8_t timeout) {
+  struct termios2 tty;
+  if (ioctl(fd_, TCGETS2, &tty) < 0) {
+    LOG(E, "Error on TCGETS2 for blocking read: " << strerror(errno));
+    return -1;
+  }
+
+  uint8_t old_cc_vmin = tty.c_cc[VMIN];
+  uint8_t old_cc_vtime = tty.c_cc[VTIME];
+
+  tty.c_cc[VMIN] = size;
+  tty.c_cc[VTIME] = timeout;
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for blocking read: " << strerror(errno));
+    return -1;
+  }
+
+  ssize_t n = read(data);
+
+  tty.c_cc[VMIN] = old_cc_vmin;
+  tty.c_cc[VTIME] = old_cc_vtime;
+
+  if (ioctl(fd_, TCSETS2, &tty) < 0) {
+    LOG(E, "Error on TCSETS2 for blocking read: " << strerror(errno));
+    return -1;
+  }
+
+  return n;
+}
+
 ssize_t Serial::write(const std::vector<byte>& data) {
   ssize_t n = ::write(fd_, data.data(), data.size());
   LOG(E, n < 0, "Error on write: " << strerror(errno));
