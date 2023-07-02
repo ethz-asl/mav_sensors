@@ -4,6 +4,18 @@
 
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
 
+template <>
+Xwr18XxMmwDemo::MmwDemoOutputMessageType Xwr18XxMmwDemo::parse(const std::vector<byte>& data,
+                                                               size_t* offset) {
+  int value = 0;
+  LOG(I, sizeof(Xwr18XxMmwDemo::MmwDemoOutputMessageType));
+  for (size_t i = sizeof(MMWDEMO_OUTPUT_MSG_DETECTED_POINTS); i-- > 0;) {
+    value |= data[*offset + i] << (8 * i);
+  }
+  *offset += sizeof(Xwr18XxMmwDemo::MmwDemoOutputMessageType);
+  return static_cast<Xwr18XxMmwDemo::MmwDemoOutputMessageType>(value);
+}
+
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Read data from serial buffer and detect magic key 0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08,
   // 0x06.
@@ -61,8 +73,8 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   LOG(I, "Frame number: " << frameNumber);
   uint32_t timeCpuCycles = parse<uint32_t>(header, &offset);
   LOG(I, "Time CPU cycles: " << timeCpuCycles);
-  uint32_t numDetectedObj = parse<uint32_t>(header, &offset);
-  LOG(I, "Number of detected objects: " << numDetectedObj);
+  uint32_t num_detected_obj = parse<uint32_t>(header, &offset);
+  LOG(I, "Number of detected objects: " << num_detected_obj);
   uint32_t numTLVs = parse<uint32_t>(header, &offset);
   LOG(I, "Number of TLVs: " << numTLVs);
   uint32_t subFrameNumber = parse<uint32_t>(header, &offset);
@@ -85,7 +97,29 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   }
 
   // Parse data.
-  return std::make_tuple(CfarDetections::ReturnType());
+  offset = 0;
+  CfarDetections::ReturnType detections(num_detected_obj);
+
+  while (offset < tlv.size()) {
+    auto tlv_type = parse<MmwDemoOutputMessageType>(tlv, &offset);
+    auto tlv_length = parse<uint32_t>(tlv, &offset);
+    LOG(I, "TLV type: " << tlv_type << " TLV length: " << tlv_length);
+    if (tlv_type == MMWDEMO_OUTPUT_MSG_DETECTED_POINTS) {
+      // Point cloud.
+      for (size_t i = 0; i < num_detected_obj; ++i) {
+        detections[i].x = parse<int>(tlv, &offset);
+        detections[i].y = parse<int>(tlv, &offset);
+        detections[i].z = parse<int>(tlv, &offset);
+        detections[i].velocity = parse<int>(tlv, &offset);
+      }
+    } else {
+      // Skip.
+      LOG(W, "Skipping TLV type: " << tlv_type);
+      offset += tlv_length;
+    }
+  }
+
+  return std::make_tuple(detections);
 }
 
 bool Xwr18XxMmwDemo::open() {
