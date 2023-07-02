@@ -74,15 +74,16 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
 
   while (bytes_missing) {
     LOG(I, "Reading TLV, " << bytes_missing << " bytes missing");
-    size_t n_chunk = bytes_missing > 0xFF ? 0xFF : bytes_missing;
+    LOG(I, "Available bytes: " << drv_data_.available() << " bytes");
+    uint8_t n_chunk = bytes_missing > 0xFF ? 0xFF : uint8_t(bytes_missing);
     std::vector<byte> chunk(n_chunk);
-    n = drv_data_.blockingRead(&chunk, n_chunk, kTimeout);
-    if (n != n_chunk) {
-      LOG(E, "Failed to read TLV: " << n << " out of " << n_chunk << " bytes read");
+    n = drv_data_.blockingRead(&chunk, n_chunk, 0);
+    if (n <= 0) {
+      LOG(E, "Failed to read TLV: " << n << " out of " << +n_chunk << " bytes read");
       return std::make_tuple(CfarDetections::ReturnType());
     }
     LOG(I, "Read " << n << " bytes of TLV");
-    std::copy(chunk.begin(), chunk.end(), tlv.begin() + tlv.size() - bytes_missing);
+    std::copy(chunk.begin(), chunk.begin() + n, tlv.begin() + tlv.size() - bytes_missing);
     bytes_missing -= n;
   }
 
