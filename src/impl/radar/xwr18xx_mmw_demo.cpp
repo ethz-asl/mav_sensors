@@ -77,7 +77,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     LOG(I, "Available bytes: " << drv_data_.available() << " bytes");
     uint8_t n_chunk = bytes_missing > 0xFF ? 0xFF : uint8_t(bytes_missing);
     std::vector<byte> chunk(n_chunk);
-    n = drv_data_.blockingRead(&chunk, n_chunk, 0);
+    n = drv_data_.blockingRead(&chunk, n_chunk, kTimeout);
     if (n <= 0) {
       LOG(E, "Failed to read TLV: " << n << " out of " << +n_chunk << " bytes read");
       return std::make_tuple(CfarDetections::ReturnType());
