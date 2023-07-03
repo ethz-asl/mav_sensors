@@ -19,18 +19,20 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-add_compile_definitions(MODE_LPP)
+add_compile_definitions(MODE_ROSLOG)
 
 add_library(${PROJECT_NAME}
         src/core/sensor_config.cpp
         src/core/sensor.cpp
         src/core/driver.cpp
 
+        src/core/protocols/Serial.cpp
         src/core/protocols/Spi.cpp
 
         src/core/sensor_types/FluidPressure.cpp
 
         src/impl/barometer/bmp390.cpp
+        src/impl/radar/xwr18xx_mmw_demo.cpp
         )
 
 target_link_libraries(${PROJECT_NAME}
@@ -42,6 +44,9 @@ add_executable(${PROJECT_NAME}_node src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node
         ${PROJECT_NAME}
         )
+
+add_executable(xwr18xx_mmw_demo src/nodes/xwr18xx_mmw_demo_node.cpp)
+target_link_libraries(xwr18xx_mmw_demo ${PROJECT_NAME})
 
 #############
 ## Install ##
