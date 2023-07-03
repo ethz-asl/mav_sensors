@@ -31,6 +31,12 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
 
  private:
   /**
+   * Read xwr18xx radar config from file
+   * @return
+   */
+  [[nodiscard]] bool loadConfig(const std::string& path) const;
+
+  /**
    * @brief Parse a value from a byte vector in big endian format.
    */
   template <typename T>

@@ -10,6 +10,7 @@
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
   SensorConfig sensorConfig;
+  //sensorConfig.set("path_cfg_file", "xwr18xx_AOP_profile_2023_07_03T09_17_14_772.cfg");
   sensorConfig.set("path_cfg", "/dev/ttyUSB0");
   sensorConfig.set("path_data", "/dev/ttyUSB1");
 

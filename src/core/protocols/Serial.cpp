@@ -50,14 +50,13 @@ bool Serial::open() {
   return true;
 }
 
-ssize_t Serial::read(std::vector<byte>* data) {
-  assert(data != nullptr);
-  ssize_t n = ::read(fd_, data->data(), data->size());
+ssize_t Serial::read(void* data, size_t len_data) const {
+  ssize_t n = ::read(fd_, data, len_data);
   LOG(E, n < 0, "Error on read: " << strerror(errno));
   return n;
 }
 
-ssize_t Serial::read(std::vector<byte>* data, uint8_t size, uint8_t timeout) {
+ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t timeout) const {
   struct termios2 tty {};
   if (::ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for read: " << strerror(errno));
@@ -68,14 +67,14 @@ ssize_t Serial::read(std::vector<byte>* data, uint8_t size, uint8_t timeout) {
   uint8_t old_cc_vtime = tty.c_cc[VTIME];
 
   tty.c_cc[VTIME] = timeout;
-  tty.c_cc[VMIN] = size;
+  tty.c_cc[VMIN] = v_min;
 
   if (::ioctl(fd_, TCSETS2, &tty) < 0) {
     LOG(E, "Error on TCSETS2 for read: " << strerror(errno));
     return -1;
   }
 
-  ssize_t n = read(data);
+  ssize_t n = read(data, len_data);
 
   tty.c_cc[VTIME] = old_cc_vtime;
   tty.c_cc[VMIN] = old_cc_vmin;
@@ -88,8 +87,8 @@ ssize_t Serial::read(std::vector<byte>* data, uint8_t size, uint8_t timeout) {
   return n;
 }
 
-ssize_t Serial::write(const std::vector<byte>& data) {
-  ssize_t n = ::write(fd_, data.data(), data.size());
+ssize_t Serial::write(const void* data, size_t len_data) const {
+  ssize_t n = ::write(fd_, data, len_data);
   LOG(E, n < 0, "Error on write: " << strerror(errno));
   return n;
 }
