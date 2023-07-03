@@ -24,7 +24,7 @@ echo "frameCfg 0 2 16 0 100 1 0" > /dev/ttyUSB0
 sleep 1
 echo "lowPower 0 0" > /dev/ttyUSB0
 sleep 1
-echo "guiMonitor -1 0 1 0 0 0 1" > /dev/ttyUSB0
+echo "guiMonitor -1 1 1 0 0 0 1" > /dev/ttyUSB0
 sleep 1
 echo "cfarCfg -1 0 2 8 4 3 0 15 1" > /dev/ttyUSB0
 sleep 1
