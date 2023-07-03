@@ -125,15 +125,6 @@ bool Xwr18XxMmwDemo::open() {
     return false;
   }
 
-  std::optional<std::string> cfg_file_path = cfg_.get("path_cfg_file");
-  if (!cfg_file_path.has_value()) {
-    LOG(I, "Sensor config doesn't have field path_cfg_file. Skipping config load.");
-  } else {
-    if (!loadConfig(cfg_file_path.value())) {
-      LOG(W, "Skipped config load");
-    }
-  }
-
   drv_cfg_.setPath(path_cfg.value());
   if (!drv_cfg_.open()) return false;
 
@@ -148,6 +139,15 @@ bool Xwr18XxMmwDemo::open() {
   if (!drv_cfg_.setControlBaudRate(115200)) return false;
   if (!drv_data_.setControlBaudRate(921600)) return false;
 
+  std::optional<std::string> cfg_file_path = cfg_.get("path_cfg_file");
+  if (!cfg_file_path.has_value()) {
+    LOG(I, "Sensor config doesn't have field path_cfg_file. Skipping config load.");
+  } else {
+    if (!loadConfig(cfg_file_path.value())) {
+      LOG(W, "Skipped config load");
+    }
+  }
+
   return true;
 }
 
@@ -159,8 +159,10 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     std::string line;
 
     while (std::getline(configFile, line)) {
-      if (!line.empty() && line[0] != '%') //Ignore comments in config
-      lines.push_back(line);
+      if (!line.empty() && line[0] != '%') { //Ignore comments in config
+        line += "\x0D";
+        lines.push_back(line);
+      }
     }
     configFile.close();
   } else {
@@ -172,6 +174,15 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     if (drv_cfg_.write(line.data(), line.length()) != line.length()) {
       LOG(E, "Error on config write" << ::strerror(errno));
     }
+    std::vector<byte> buf;
+    buf.resize(512);
+    ssize_t res = drv_cfg_.read(buf.data(), buf.size(), 10, 50);
+
+    if (res <= 0) {
+      LOG(E, "Error on read" << ::strerror(errno));
+    }
+
+    LOG(D, "Read: " << std::string(buf.begin(), buf.end()););
   }
   return true;
 }

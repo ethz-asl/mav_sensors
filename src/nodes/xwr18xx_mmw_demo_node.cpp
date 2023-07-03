@@ -15,7 +15,10 @@ int main(int argc, char** argv) {
   sensorConfig.set("path_data", "/dev/ttyUSB1");
 
   Xwr18XxMmwDemo radar(sensorConfig);
-  radar.open();
+  if (!radar.open()) {
+    LOG(F, "Open failed.");
+    return 1;
+  }
 
   int num_reads = 100;
   while (num_reads--) {
