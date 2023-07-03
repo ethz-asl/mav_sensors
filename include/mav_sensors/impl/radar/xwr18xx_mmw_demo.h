@@ -30,6 +30,10 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   }
 
  private:
+
+  /**
+   * @brief Parse a value from a byte vector in big endian format.
+  */
   template <typename T>
   T parse(const std::vector<byte>& data, size_t* offset) {
     T value = 0;
