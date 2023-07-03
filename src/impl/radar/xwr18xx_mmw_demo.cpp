@@ -3,6 +3,7 @@
 //
 
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
+
 #include "mav_sensors/core/sensor_types/Radar.h"
 
 template <>
@@ -62,7 +63,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
 
   // Read header.
   std::vector<byte> header(kHeaderSize);
-  n = drv_data_.blockingRead(&header, header.size(), kTimeout);
+  n = drv_data_.read(&header, header.size(), kTimeout);
   if (n != header.size()) {
     LOG(E, "Failed to read header");
     return std::make_tuple(Radar::ReturnType());
@@ -92,7 +93,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   while (bytes_missing) {
     uint8_t n_chunk = bytes_missing > 0xFF ? 0xFF : uint8_t(bytes_missing);
     std::vector<byte> chunk(n_chunk);
-    n = drv_data_.blockingRead(&chunk, n_chunk, kTimeout);
+    n = drv_data_.read(&chunk, n_chunk, kTimeout);
     if (n <= 0) {
       LOG(E, "Failed to read TLV: " << n << " out of " << +n_chunk << " bytes read");
       return std::make_tuple(measurement);
