@@ -8,7 +8,7 @@
 
 template <>
 Xwr18XxMmwDemo::MmwDemoOutputMessageType Xwr18XxMmwDemo::parse(const std::vector<byte>& data,
-                                                               size_t* offset) {
+                                                               size_t* offset) const {
   int value = 0;
   for (size_t i = sizeof(MMWDEMO_OUTPUT_MSG_DETECTED_POINTS); i-- > 0;) {
     value |= data[*offset + i] << (8 * i);
@@ -18,7 +18,7 @@ Xwr18XxMmwDemo::MmwDemoOutputMessageType Xwr18XxMmwDemo::parse(const std::vector
 }
 
 template <>
-float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) {
+float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const {
   auto value = parse<uint32_t>(data, offset);
   float result;
   std::memcpy(&result, &value, sizeof(float));
