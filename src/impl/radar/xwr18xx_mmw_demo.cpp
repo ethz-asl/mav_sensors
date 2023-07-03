@@ -16,6 +16,14 @@ Xwr18XxMmwDemo::MmwDemoOutputMessageType Xwr18XxMmwDemo::parse(const std::vector
   return static_cast<Xwr18XxMmwDemo::MmwDemoOutputMessageType>(value);
 }
 
+template <>
+float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) {
+  auto value = parse<uint32_t>(data, offset);
+  float result;
+  std::memcpy(&result, &value, sizeof(float));
+  return result;
+}
+
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Read data from serial buffer and detect magic key 0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08,
   // 0x06.
@@ -107,10 +115,10 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     if (tlv_type == MMWDEMO_OUTPUT_MSG_DETECTED_POINTS) {
       // Point cloud.
       for (size_t i = 0; i < num_detected_obj; ++i) {
-        detections[i].x = parse<int>(tlv, &offset);
-        detections[i].y = parse<int>(tlv, &offset);
-        detections[i].z = parse<int>(tlv, &offset);
-        detections[i].velocity = parse<int>(tlv, &offset);
+        detections[i].x = parse<float>(tlv, &offset);
+        detections[i].y = parse<float>(tlv, &offset);
+        detections[i].z = parse<float>(tlv, &offset);
+        detections[i].velocity = parse<float>(tlv, &offset);
       }
     } else {
       // Skip.
