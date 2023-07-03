@@ -58,7 +58,7 @@ ssize_t Serial::read(std::vector<byte>* data) {
 }
 
 ssize_t Serial::read(std::vector<byte>* data, uint8_t size, uint8_t timeout) {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (::ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for read: " << strerror(errno));
     return -1;
@@ -95,7 +95,7 @@ ssize_t Serial::write(const std::vector<byte>& data) {
 }
 
 bool Serial::setControlParityBit(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for parity bit: " << strerror(errno));
     return false;
@@ -115,7 +115,7 @@ bool Serial::setControlParityBit(bool bit) const {
 }
 
 bool Serial::setControlStopBit(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for stop bit: " << strerror(errno));
     return false;
@@ -135,7 +135,7 @@ bool Serial::setControlStopBit(bool bit) const {
 }
 
 bool Serial::setControlNumberOfBitsPerByte(int bits) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for number of bits per byte: " << strerror(errno));
     return false;
@@ -168,7 +168,7 @@ bool Serial::setControlNumberOfBitsPerByte(int bits) const {
 }
 
 bool Serial::setControlBaudRate(speed_t baud) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for baud rate: " << strerror(errno));
     return false;
@@ -187,7 +187,7 @@ bool Serial::setControlBaudRate(speed_t baud) const {
 }
 
 bool Serial::setControlFlowControl(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for flow control bit: " << strerror(errno));
     return false;
@@ -207,7 +207,7 @@ bool Serial::setControlFlowControl(bool bit) const {
 }
 
 bool Serial::setControlLocal(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local bit: " << strerror(errno));
     return false;
@@ -227,7 +227,7 @@ bool Serial::setControlLocal(bool bit) const {
 }
 
 bool Serial::setControlRead(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for read bit: " << strerror(errno));
     return false;
@@ -247,7 +247,7 @@ bool Serial::setControlRead(bool bit) const {
 }
 
 bool Serial::setLocalCanonicalMode(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local canonical mode bit: " << strerror(errno));
     return false;
@@ -267,7 +267,7 @@ bool Serial::setLocalCanonicalMode(bool bit) const {
 }
 
 bool Serial::setLocalEcho(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local echo bit: " << strerror(errno));
     return false;
@@ -287,7 +287,7 @@ bool Serial::setLocalEcho(bool bit) const {
 }
 
 bool Serial::setLocalEchoErase(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local echo erase bit: " << strerror(errno));
     return false;
@@ -307,7 +307,7 @@ bool Serial::setLocalEchoErase(bool bit) const {
 }
 
 bool Serial::setLocalEchoNewLine(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local echo new line bit: " << strerror(errno));
     return false;
@@ -327,7 +327,7 @@ bool Serial::setLocalEchoNewLine(bool bit) const {
 }
 
 bool Serial::setLocalSignal(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for local signal bit: " << strerror(errno));
     return false;
@@ -347,7 +347,7 @@ bool Serial::setLocalSignal(bool bit) const {
 }
 
 bool Serial::setSoftwareFlowControl(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for software flow control: " << strerror(errno));
     return false;
@@ -367,7 +367,7 @@ bool Serial::setSoftwareFlowControl(bool bit) const {
 }
 
 bool Serial::setSpecialCharacterProcessing(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for special character processing: " << strerror(errno));
     return false;
@@ -387,7 +387,7 @@ bool Serial::setSpecialCharacterProcessing(bool bit) const {
 }
 
 bool Serial::setOutputProcessing(bool bit) const {
-  struct termios2 tty;
+  struct termios2 tty {};
   if (ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 output processing: " << strerror(errno));
     return false;
