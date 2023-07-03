@@ -15,6 +15,8 @@ Serial::~Serial() { ::close(fd_); }
 
 void Serial::setPath(std::string path) { path_ = std::move(path); }
 
+const std::string& Serial::getPath() const { return path_; }
+
 bool Serial::open() {
   fd_ = ::open(path_.data(), O_RDWR);
   if (fd_ < 0) {
