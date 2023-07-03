@@ -26,44 +26,24 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) {
 }
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
-  // Read data from serial buffer and detect magic key 0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08,
-  // 0x06.
-  std::vector<byte> data(1);
-  auto n = drv_data_.read(&data);
-  bool new_data = false;
-  while (n > 0 && data[0] != 0x02) {
-    n = drv_data_.read(&data);
-  }
-  if (data[0] == 0x02) {
-    n = drv_data_.read(&data);
-    if (data[0] == 0x01) {
-      n = drv_data_.read(&data);
-      if (data[0] == 0x04) {
-        n = drv_data_.read(&data);
-        if (data[0] == 0x03) {
-          n = drv_data_.read(&data);
-          if (data[0] == 0x06) {
-            n = drv_data_.read(&data);
-            if (data[0] == 0x05) {
-              n = drv_data_.read(&data);
-              if (data[0] == 0x08) {
-                n = drv_data_.read(&data);
-                if (data[0] == 0x07) {
-                  new_data = true;
-                }
-              }
-            }
-          }
-        }
-      }
+  // Read data from serial buffer and detect magic key
+  std::vector<byte> magic_bit(1);
+  size_t i = 0;
+  while (i < kMagicKey.size()) {
+    auto n = drv_data_.read(&magic_bit);
+    if (n > 0 && magic_bit[0] == kMagicKey[i]) {
+      i++; // Magic bit found. Increment counter.
+    } else if (!drv_data_.available()) {
+      LOG(W, "Magic key not found.");
+      return std::make_tuple(Radar::ReturnType());
+    } else {
+      i = 0; // Magic bit not found. Reset counter.
     }
   }
 
-  if (!new_data) return std::make_tuple(Radar::ReturnType());
-
   // Read header.
   std::vector<byte> header(kHeaderSize);
-  n = drv_data_.read(&header, header.size(), kTimeout);
+  auto n = drv_data_.read(&header, header.size(), kTimeout);
   if (n != header.size()) {
     LOG(E, "Failed to read header");
     return std::make_tuple(Radar::ReturnType());
