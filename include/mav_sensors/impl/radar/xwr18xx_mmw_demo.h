@@ -8,11 +8,11 @@
 
 #include "mav_sensors/core/protocols/Serial.h"
 #include "mav_sensors/core/sensor.h"
-#include "mav_sensors/core/sensor_types/CfarDetections.h"
+#include "mav_sensors/core/sensor_types/Radar.h"
 
-class Xwr18XxMmwDemo : public Sensor<Serial, CfarDetections> {
+class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
  public:
-  typedef Sensor<Serial, CfarDetections> super;
+  typedef Sensor<Serial, Radar> super;
 
   explicit Xwr18XxMmwDemo(SensorConfig sensor_cfg) : cfg_(std::move(sensor_cfg)){};
 

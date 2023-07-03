@@ -406,7 +406,7 @@ bool Serial::setOutputProcessing(bool bit) const {
 
 bool Serial::close() {
   if (::close(fd_) != 0) {
-    LOG(I, "Error closing fd: " << strerror(errno));
+    LOG(E, "Error closing fd: " << strerror(errno));
     return false;
   }
   is_open_ = false;
