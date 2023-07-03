@@ -54,15 +54,15 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   auto version = parse<uint32_t>(header, &offset);
   LOG(W, version != kHeaderVersion,
       "XWR18XX firmware not version 0x" << std::hex << kHeaderVersion << " but 0x" << +version);
-  uint32_t total_packet_len = parse<uint32_t>(header, &offset);
-  uint32_t platform = parse<uint32_t>(header, &offset);
+  auto total_packet_len = parse<uint32_t>(header, &offset);
+  auto platform = parse<uint32_t>(header, &offset);
   LOG(W, platform != kHeaderPlatform,
       "XWR18XX platform not 0x" << std::hex << +kHeaderPlatform << " but 0x" << +platform);
-  uint32_t frame_number = parse<uint32_t>(header, &offset);
-  uint32_t time_cpu_cycles = parse<uint32_t>(header, &offset);
-  uint32_t num_detected_obj = parse<uint32_t>(header, &offset);
-  uint32_t num_tlvs = parse<uint32_t>(header, &offset);
-  uint32_t sub_frame_number = parse<uint32_t>(header, &offset);
+  auto frame_number = parse<uint32_t>(header, &offset);
+  auto time_cpu_cycles = parse<uint32_t>(header, &offset);
+  auto num_detected_obj = parse<uint32_t>(header, &offset);
+  auto num_tlvs = parse<uint32_t>(header, &offset);
+  auto sub_frame_number = parse<uint32_t>(header, &offset);
   Radar::ReturnType measurement(num_detected_obj);
   measurement.hardware_stamp = time_cpu_cycles;
 
