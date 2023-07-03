@@ -14,10 +14,10 @@ class Radar : public SensorType {
   inline Radar(size_t num_detections) : cfar_detections(num_detections) {}
   inline Radar() : Radar(0) {}
   struct CfarDetection {
-    float x{std::nan("1")};
-    float y{std::nan("1")};
-    float z{std::nan("1")};
-    float velocity{std::nan("1")};
+    float x{std::nanf("1")};
+    float y{std::nanf("1")};
+    float z{std::nanf("1")};
+    float velocity{std::nanf("1")};
     int16_t snr{-1};
     int16_t noise{-1};
   };
