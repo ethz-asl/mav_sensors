@@ -32,12 +32,12 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   while (i < kMagicKey.size()) {
     auto n = drv_data_.read(&magic_bit);
     if (n > 0 && magic_bit[0] == kMagicKey[i]) {
-      i++; // Magic bit found. Increment counter.
+      i++;  // Magic bit found. Increment counter.
     } else if (!drv_data_.available()) {
       LOG(W, "Magic key not found.");
       return std::make_tuple(Radar::ReturnType());
     } else {
-      i = 0; // Magic bit not found. Reset counter.
+      i = 0;  // Magic bit not found. Reset counter.
     }
   }
 
@@ -52,12 +52,12 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Parse header.
   size_t offset = 0;
   auto version = parse<uint32_t>(header, &offset);
-  LOG(W, version != 0x03060000,
-      "XWR18XX firmware not version 0x" << std::hex << 0x03060000 << " but 0x" << +version);
+  LOG(W, version != kHeaderVersion,
+      "XWR18XX firmware not version 0x" << std::hex << kHeaderVersion << " but 0x" << +version);
   uint32_t total_packet_len = parse<uint32_t>(header, &offset);
   uint32_t platform = parse<uint32_t>(header, &offset);
-  LOG(W, platform != 0xa1843,
-      "XWR18XX platform not 0x" << std::hex << 0xa1843 << " but 0x" << +platform);
+  LOG(W, platform != kHeaderPlatform,
+      "XWR18XX platform not 0x" << std::hex << +kHeaderPlatform << " but 0x" << +platform);
   uint32_t frame_number = parse<uint32_t>(header, &offset);
   uint32_t time_cpu_cycles = parse<uint32_t>(header, &offset);
   uint32_t num_detected_obj = parse<uint32_t>(header, &offset);
