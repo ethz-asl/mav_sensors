@@ -154,16 +154,16 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
   std::vector<std::string> lines{};
 
   std::ifstream config_file(file_path);
-  if (configFile.is_open()) {
+  if (config_file.is_open()) {
     std::string line;
 
-    while (std::getline(configFile, line)) {
+    while (std::getline(config_file, line)) {
       if (!line.empty() && line[0] != '%') { //Ignore comments in config
         line += "\x0D";
         lines.push_back(line);
       }
     }
-    configFile.close();
+    config_file.close();
   } else {
     LOG(E, "Failed to open config file " << file_path << ": " << ::strerror(errno));
     return false;
