@@ -26,14 +26,15 @@ add_library(${PROJECT_NAME}
         src/core/sensor.cpp
         src/core/driver.cpp
 
+        src/core/protocols/common/PosixFilesystem.cpp
         src/core/protocols/Serial.cpp
         src/core/protocols/Spi.cpp
+        src/core/protocols/Gpio.cpp
 
         src/core/sensor_types/FluidPressure.cpp
 
         src/impl/barometer/bmp390.cpp
-        src/impl/radar/xwr18xx_mmw_demo.cpp
-        )
+        src/impl/radar/xwr18xx_mmw_demo.cpp)
 
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}
