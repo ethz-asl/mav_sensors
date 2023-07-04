@@ -29,8 +29,7 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Read data from serial buffer and detect magic key
-  std::vector<byte> magic_bit{};
-  magic_bit.resize(1);
+  std::vector<byte> magic_bit(1);
   size_t i = 0;
   while (i < kMagicKey.size()) {
     auto n = drv_data_.read(magic_bit.data(), magic_bit.size());
