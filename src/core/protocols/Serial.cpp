@@ -56,7 +56,7 @@ ssize_t Serial::read(void* data, size_t len_data) const {
   return n;
 }
 
-ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t timeout) const {
+ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t v_time) const {
   struct termios2 tty {};
   if (::ioctl(fd_, TCGETS2, &tty) < 0) {
     LOG(E, "Error on TCGETS2 for read: " << strerror(errno));
@@ -66,7 +66,7 @@ ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t timeout
   uint8_t old_cc_vmin = tty.c_cc[VMIN];
   uint8_t old_cc_vtime = tty.c_cc[VTIME];
 
-  tty.c_cc[VTIME] = timeout;
+  tty.c_cc[VTIME] = v_time;
   tty.c_cc[VMIN] = v_min;
 
   if (::ioctl(fd_, TCSETS2, &tty) < 0) {

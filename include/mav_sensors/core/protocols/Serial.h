@@ -27,14 +27,14 @@ class Serial : public Driver {
   [[nodiscard]] ssize_t read(void* data, size_t len_data) const;
 
   /**
-   * @brief Read data from serial port. Wait for v_min bytes to be available or until timeout.
+   * @brief Read data from serial port. Wait for v_min bytes to be available or until v_time.
    * @param data data buffer
    * @param len_data data buffer length
    * @param v_min number of bytes
-   * @param timeout in deciseconds (1 deci second = 0.1 second)
+   * @param v_time in deciseconds (1 deci second = 0.1 second)
    * @return number of bytes read or a negative value on failure
    */
-  [[nodiscard]] ssize_t read(void* data, size_t len_data, uint8_t v_min, uint8_t timeout) const;
+  [[nodiscard]] ssize_t read(void* data, size_t len_data, uint8_t v_min, uint8_t v_time) const;
 
   /**
    *
