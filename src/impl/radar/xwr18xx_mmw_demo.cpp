@@ -154,7 +154,7 @@ bool Xwr18XxMmwDemo::open() {
 bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
   std::vector<std::string> lines{};
 
-  std::ifstream configFile(file_path);
+  std::ifstream config_file(file_path);
   if (configFile.is_open()) {
     std::string line;
 
