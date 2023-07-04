@@ -53,6 +53,7 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   Serial drv_data_;
   SensorConfig cfg_;
 
+  inline static const constexpr std::string_view kPrompt{"mmwDemo:/>"};
   inline static const constexpr uint8_t kTimeout = 100;
   inline static const constexpr size_t kHeaderSize = 8 * sizeof(uint32_t);
   inline static const constexpr uint32_t kHeaderVersion = 0x03060000;  // Currently tested version.

@@ -176,7 +176,7 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     }
     std::vector<byte> buf;
     buf.resize(512);
-    ssize_t res = drv_cfg_.read(buf.data(), buf.size(), 10, 50);
+    ssize_t res = drv_cfg_.read(buf.data(), buf.size(), kPrompt.size(), 50);
 
     if (res <= 0) {
       LOG(E, "Error on read" << ::strerror(errno));
