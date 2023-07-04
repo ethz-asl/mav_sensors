@@ -22,7 +22,7 @@ class Serial : public Driver {
    * Read data from serial port. Blocks until any data is available.
    * @param data buffer
    * @param len_data number of bytes
-   * @return umber of bytes read or a negative value on failure
+   * @return Number of bytes read or a negative value on failure
    */
   [[nodiscard]] ssize_t read(void* data, size_t len_data) const;
 
