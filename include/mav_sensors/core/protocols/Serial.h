@@ -17,11 +17,32 @@ class Serial : public Driver {
   explicit Serial();
   bool open() override;
   bool close() override;
-  // Read data from serial port. Blocks until any data is available.
-  ssize_t read(std::vector<byte>* data);
-  // Read data from serial port. Wait for size bytes to be available.
-  ssize_t read(std::vector<byte>* data, uint8_t size, uint8_t timeout);
-  ssize_t write(const std::vector<byte>& data);
+
+  /**
+   * Read data from serial port. Blocks until any data is available.
+   * @param data buffer
+   * @param len_data number of bytes
+   * @return Number of bytes read or a negative value on failure
+   */
+  [[nodiscard]] ssize_t read(void* data, size_t len_data) const;
+
+  /**
+   * @brief Read data from serial port. Wait for v_min bytes to be available or until v_time.
+   * @param data data buffer
+   * @param len_data data buffer length
+   * @param v_min number of bytes
+   * @param v_time in deciseconds (1 deci second = 0.1 second)
+   * @return number of bytes read or a negative value on failure
+   */
+  [[nodiscard]] ssize_t read(void* data, size_t len_data, uint8_t v_min, uint8_t v_time) const;
+
+  /**
+   *
+   * @param data data buffer
+   * @param len_data data buffer length
+   * @return number of bytes written or a negative value on failure
+   */
+  [[nodiscard]] ssize_t write(const void* data, size_t len_data) const;
 
   void setPath(std::string path);
 

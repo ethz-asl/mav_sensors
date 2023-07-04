@@ -4,6 +4,8 @@
 
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
 
+#include <fstream>
+
 #include "mav_sensors/core/sensor_types/Radar.h"
 
 template <>
@@ -30,7 +32,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   std::vector<byte> magic_bit(1);
   size_t i = 0;
   while (i < kMagicKey.size()) {
-    auto n = drv_data_.read(&magic_bit);
+    auto n = drv_data_.read(magic_bit.data(), magic_bit.size());
     if (n > 0 && magic_bit[0] == kMagicKey[i]) {
       i++;  // Magic bit found. Increment counter.
     } else if (!drv_data_.available()) {
@@ -43,7 +45,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
 
   // Read header.
   std::vector<byte> header(kHeaderSize);
-  auto n = drv_data_.read(&header, header.size(), kTimeout);
+  auto n = drv_data_.read(header.data(), header.size(), header.size(), kTimeout);
   if (n != header.size()) {
     LOG(E, "Failed to read header");
     return std::make_tuple(Radar::ReturnType());
@@ -73,7 +75,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   while (bytes_missing) {
     uint8_t n_chunk = bytes_missing > 0xFF ? 0xFF : uint8_t(bytes_missing);
     std::vector<byte> chunk(n_chunk);
-    n = drv_data_.read(&chunk, n_chunk, kTimeout);
+    n = drv_data_.read(chunk.data(), chunk.size(), n_chunk, kTimeout);
     if (n <= 0) {
       LOG(E, "Failed to read TLV: " << n << " out of " << +n_chunk << " bytes read");
       return std::make_tuple(measurement);
@@ -136,5 +138,50 @@ bool Xwr18XxMmwDemo::open() {
   if (!drv_cfg_.setControlBaudRate(115200)) return false;
   if (!drv_data_.setControlBaudRate(921600)) return false;
 
+  std::optional<std::string> cfg_file_path = cfg_.get("path_cfg_file");
+  if (!cfg_file_path.has_value()) {
+    LOG(I, "Sensor config doesn't have field path_cfg_file. Skipping config load.");
+  } else {
+    if (!loadConfig(cfg_file_path.value())) {
+      LOG(W, "Skipped config load");
+    }
+  }
+
+  return true;
+}
+
+bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
+  std::vector<std::string> lines{};
+
+  std::ifstream config_file(file_path);
+  if (config_file.is_open()) {
+    std::string line;
+
+    while (std::getline(config_file, line)) {
+      if (!line.empty() && line[0] != '%') { //Ignore comments in config
+        line += "\x0D";
+        lines.push_back(line);
+      }
+    }
+    config_file.close();
+  } else {
+    LOG(E, "Failed to open config file " << file_path << ": " << ::strerror(errno));
+    return false;
+  }
+
+  for (const auto& line: lines) {
+    if (drv_cfg_.write(line.data(), line.length()) != line.length()) {
+      LOG(E, "Error on config write" << ::strerror(errno));
+    }
+    std::vector<byte> buf;
+    buf.resize(512);
+    ssize_t res = drv_cfg_.read(buf.data(), buf.size(), kPrompt.size(), 50);
+
+    if (res <= 0) {
+      LOG(E, "Error on read" << ::strerror(errno));
+    }
+
+    LOG(D, "Read: " << std::string(buf.begin(), buf.end()););
+  }
   return true;
 }
