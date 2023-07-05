@@ -25,7 +25,22 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   std::tuple<typename T::ReturnType...> read() = delete;
 
   bool close() override {
-    bool success = drv_cfg_.close();
+    bool success = true;
+    std::string reset_trigger{"frameCfg 0 2 128 0 100 1 0"};
+    if (drv_cfg_.write(reset_trigger.c_str(), reset_trigger.length()) != reset_trigger.length()) {
+      LOG(E, "Reset trigger failed. Radar will fail to start without hardware trigger enabled");
+      success = false;
+    } else {
+      std::vector<byte> buf(512);
+      ssize_t res = drv_cfg_.read(buf.data(), buf.size(), kPrompt.size(), 50);
+      if (res <= 0) {
+        LOG(E, "Error on read" << ::strerror(errno));
+        success = false;
+      }
+    }
+    LOG(I, "Hardware trigger reset.");
+
+    success &= drv_cfg_.close();
     success &= drv_data_.close();
 
     if (gpio_.has_value()) {
@@ -33,6 +48,7 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
         LOG(I, "Closed gpio " << gpio_.value().getPath());
       } else {
         LOG(E, "Error on close " << ::strerror(errno));
+        success = false;
       }
     }
 
