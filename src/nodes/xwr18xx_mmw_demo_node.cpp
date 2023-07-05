@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int num_reads = 100;
+  int num_reads = 10;
   while (num_reads--) {
     auto measurement = radar.read();
     LOG(I, "Hardware stamp: " << std::get<0>(measurement).hardware_stamp);
