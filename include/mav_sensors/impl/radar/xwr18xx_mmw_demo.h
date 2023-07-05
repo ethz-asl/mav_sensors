@@ -6,6 +6,7 @@
 
 #include <log++.h>
 
+#include "mav_sensors/core/protocols/Gpio.h"
 #include "mav_sensors/core/protocols/Serial.h"
 #include "mav_sensors/core/sensor.h"
 #include "mav_sensors/core/sensor_types/Radar.h"
@@ -24,8 +25,43 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   std::tuple<typename T::ReturnType...> read() = delete;
 
   bool close() override {
-    bool success = drv_cfg_.close();
+    bool success = true;
+    if (trigger_enabled_) {  // Set GPIO high to keep radar running while turning it off.
+      if (!gpio_->setGpioState(GpioState::HIGH)) {
+        LOG(E, "Failed to set gpio to high " << ::strerror(errno));
+      }
+    }
+    // Stop sensor and reset hardware trigger.
+    std::vector<std::string> reset_trigger{{"sensorStop"}, {"frameCfg 0 2 128 0 100 1 0"}};
+    for (auto& cmd : reset_trigger) {
+      cmd += "\x0D";
+      if (drv_cfg_.write(cmd.c_str(), cmd.length()) != cmd.length()) {
+        LOG(E, "Reset trigger failed. Radar will fail to start without hardware trigger enabled");
+        success = false;
+      } else {
+        std::vector<byte> buf(512);
+        ssize_t res = drv_cfg_.read(buf.data(), buf.size(), kPrompt.size(), 50);
+        if (res <= 0) {
+          LOG(E, "Error on read" << ::strerror(errno));
+          success = false;
+        }
+        LOG(D, "Read: " << std::string(buf.begin(), buf.end()););
+      }
+    }
+    LOG(I, "Hardware trigger reset.");
+
+    success &= drv_cfg_.close();
     success &= drv_data_.close();
+
+    if (gpio_.has_value()) {
+      if (gpio_.value().close()) {
+        LOG(I, "Closed gpio " << gpio_.value().getPath());
+      } else {
+        LOG(E, "Error on close " << ::strerror(errno));
+        success = false;
+      }
+    }
+
     return success;
   }
 
@@ -48,6 +84,10 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
     *offset += sizeof(T);
     return value;
   }
+
+  bool trigger_enabled_{false};
+  int trigger_delay_{500};
+  std::optional<Gpio> gpio_;
 
   Serial drv_cfg_;
   Serial drv_data_;

@@ -2,7 +2,6 @@
 
 #include <fcntl.h>
 
-#include <asm/termbits.h>
 #include <log++.h>
 #include <sys/ioctl.h>
 
@@ -10,7 +9,7 @@
 
 // Created by brik on 01.07.23.
 
-Serial::Serial() {}
+Serial::Serial() = default;
 Serial::~Serial() { ::close(fd_); }
 
 void Serial::setPath(std::string path) { path_ = std::move(path); }
@@ -20,7 +19,7 @@ const std::string& Serial::getPath() const { return path_; }
 bool Serial::open() {
   fd_ = ::open(path_.c_str(), O_RDWR);
   if (fd_ < 0) {
-    LOG(E, "Error on open: " << strerror(errno));
+    LOG(E, "Error on Serial open: " << strerror(errno));
     return false;
   }
   is_open_ = true;
@@ -91,6 +90,25 @@ ssize_t Serial::write(const void* data, size_t len_data) const {
   ssize_t n = ::write(fd_, data, len_data);
   LOG(E, n < 0, "Error on write: " << strerror(errno));
   return n;
+}
+
+bool Serial::flushReadBuffer() const {
+  // Flush the read buffer using termios2
+  auto res = ::ioctl(fd_, TCFLSH, TCIFLUSH);
+  LOG(E, res < 0, "Error on flushReadBuffer: " << strerror(errno));
+  return res >= 0;
+}
+
+bool Serial::flushWriteBuffer() const {
+  auto res = ::ioctl(fd_, TCFLSH, TCIOFLUSH);
+      LOG(E, res < 0, "Error on flushWriteBuffer: " << strerror(errno));
+  return res >= 0;
+}
+
+bool Serial::flushBuffers() const {
+  auto res = ::ioctl(fd_, TCFLSH, TCIOFLUSH);
+  LOG(E, res < 0, "Error on flushBuffers: " << strerror(errno));
+  return res >= 0;
 }
 
 bool Serial::setControlParityBit(bool bit) const {
@@ -427,3 +445,5 @@ int Serial::available() const {
 // readReturnMode = UART_RETURN_NEWLINE; readDataMode = UART_DATA_TEXT; writeDataMode =
 // UART_DATA_TEXT; readEcho = UART_ECHO_ON; baudRate = 115200; dataLength = UART_LEN_8; stopBits =
 // UART_STOP_ONE; parityType = UART_PAR_NONE;
+
+int Serial::getFd() const { return fd_; }

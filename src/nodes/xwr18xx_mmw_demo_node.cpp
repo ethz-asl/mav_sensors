@@ -19,6 +19,10 @@ int main(int argc, char** argv) {
   }
   sensorConfig.set("path_cfg", "/dev/ttyUSB0");
   sensorConfig.set("path_data", "/dev/ttyUSB1");
+  sensorConfig.set("trigger", "true");
+  sensorConfig.set("trigger_delay", "500"); //in ns
+  sensorConfig.set("trigger_gpio", "443");
+  sensorConfig.set("trigger_gpio_name", "PR.00");
 
   Xwr18XxMmwDemo radar(sensorConfig);
   if (!radar.open()) {
@@ -26,9 +30,10 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int num_reads = 100;
+  int num_reads = 10;
   while (num_reads--) {
     auto measurement = radar.read();
+    LOG(I, "Unix stamp: " << std::get<0>(measurement).unix_stamp_ns);
     LOG(I, "Hardware stamp: " << std::get<0>(measurement).hardware_stamp);
     LOG(I, "Number of detections: " << std::get<0>(measurement).cfar_detections.size());
     for (const auto& detection : std::get<0>(measurement).cfar_detections) {
@@ -36,6 +41,7 @@ int main(int argc, char** argv) {
                             << detection.velocity << " " << detection.snr << " "
                             << detection.noise);
     }
+    sleep(1);
   }
   radar.close();
 }

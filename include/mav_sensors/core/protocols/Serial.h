@@ -44,6 +44,21 @@ class Serial : public Driver {
    */
   [[nodiscard]] ssize_t write(const void* data, size_t len_data) const;
 
+  /** 
+   * @brief Flush read buffer.
+  */
+  [[nodiscard]] bool flushReadBuffer() const;
+
+  /**
+   * @brief Flush write buffer.
+   */
+  [[nodiscard]] bool flushWriteBuffer() const;
+
+  /**
+   * @brief Flush read and write buffer.
+   */
+  [[nodiscard]] bool flushBuffers() const;
+
   void setPath(std::string path);
 
   //! Setters cflag
@@ -74,11 +89,10 @@ class Serial : public Driver {
   //! Getters
   [[nodiscard]] bool isOpen() const;
   [[nodiscard]] int getFd() const;
-  [[nodiscard]] const std::string& getPath() const;
+  [[nodiscard]] const std::string& getPath() const override;
   [[nodiscard]] int available() const;
 
  private:
   bool is_open_{false};
   int fd_{};
-  std::string path_{"/dev/ttyUSB0"};
 };

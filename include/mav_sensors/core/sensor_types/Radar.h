@@ -23,5 +23,6 @@ class Radar : public SensorType {
   };
   std::vector<CfarDetection> cfar_detections;
   uint32_t hardware_stamp{0xFFFFFFFF};
+  uint64_t unix_stamp_ns{0};
   typedef Radar ReturnType;
 };
