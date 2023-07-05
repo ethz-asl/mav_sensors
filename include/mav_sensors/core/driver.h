@@ -14,7 +14,7 @@ class Driver {
 
   virtual bool close() = 0;
 
-  const std::string& getPath() const;
+  virtual const std::string& getPath() const;
 
  protected:
   std::string path_;
