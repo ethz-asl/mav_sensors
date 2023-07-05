@@ -12,11 +12,10 @@
 #include <unordered_map>
 #include <utility>
 
-#include <linux/spi/spidev.h>
-#include <log++.h>
-
 #include <bmp3.h>
 #include <bmp3_defs.h>
+#include <linux/spi/spidev.h>
+#include <log++.h>
 
 #include "mav_sensors/core/protocols/Spi.h"
 #include "mav_sensors/core/sensor_config.h"
@@ -144,6 +143,8 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   FluidPressure::ReturnType readPressure();
   Spi *drv_{nullptr};
   SensorConfig cfg_;
+
+  inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
 };
 
 template <typename HardwareProtocol>
@@ -186,12 +187,22 @@ std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
   return {};
 }
 
-// // Read function for BMP390 to be passed to BMP device driver.
-// template <>
-// static int8_t BMP390<Spi>::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
-//                                    void *intf_ptr) {}
+// Read function for BMP390 to be passed to BMP device driver.
+template <>
+int8_t BMP390<Spi>::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr) {
+  auto res =
+      static_cast<Spi *>(intf_ptr)->xfer({reg_addr}, static_cast<int>(len), spi_transfer_speed_hz_);
+  std::copy(res.begin(), res.end(), reg_data);
+  return res.empty() ? BMP3_E_COMM_FAIL : BMP3_OK;
+}
 
-// // Write function for BMP390 to be passed to BMP device driver.
-// template <>
-// static int8_t BMP390<Spi>::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
-//                                     void *intf_ptr) {}
+// Write function for BMP390 to be passed to BMP device driver.
+template <>
+int8_t BMP390<Spi>::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
+                             void *intf_ptr) {
+  std::vector<uint8_t> req = {reg_addr};
+  std::copy(&reg_data[0], &reg_data[len], std::back_inserter(req));
+  // TODO(rikba): Implement IOCT error.
+  auto ret = static_cast<Spi *>(intf_ptr)->xfer(req, 0, spi_transfer_speed_hz_);
+  return BMP3_OK;
+}
