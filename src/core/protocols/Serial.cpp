@@ -20,7 +20,7 @@ const std::string& Serial::getPath() const { return path_; }
 bool Serial::open() {
   fd_ = ::open(path_.c_str(), O_RDWR);
   if (fd_ < 0) {
-    LOG(E, "Error on open: " << strerror(errno));
+    LOG(E, "Error on Serial open: " << strerror(errno));
     return false;
   }
   is_open_ = true;

@@ -20,7 +20,7 @@ bool Spi::open() {
 
   fd_ = ::open(path_.data(), O_RDWR);
   if (fd_ < 0) {
-    LOG(E, "Error on open: " << strerror(errno));
+    LOG(E, "Error on Spi open: " << strerror(errno));
     return false;
   }
   is_open_ = true;
