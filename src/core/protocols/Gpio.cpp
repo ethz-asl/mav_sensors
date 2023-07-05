@@ -18,7 +18,7 @@ bool Gpio::close() {
                                 std::to_string(gpio_nr_));
 }
 
-bool Gpio::setDirection(GpioDirection gpio_direction) {
+bool Gpio::setDirection(GpioDirection gpio_direction) const {
   std::string direction;
   switch (gpio_direction) {
     case GpioDirection::IN:
@@ -33,7 +33,7 @@ bool Gpio::setDirection(GpioDirection gpio_direction) {
   return PosixFilesystem::write(gpio_path_ + "/direction", direction);
 }
 
-bool Gpio::setGpioState(GpioState gpio_state) {
+bool Gpio::setGpioState(GpioState gpio_state) const {
   if (direction_ == GpioDirection::IN) {
     return false;
   }
@@ -49,4 +49,8 @@ bool Gpio::setGpioState(GpioState gpio_state) {
       return false;
   }
   return PosixFilesystem::write(gpio_path_ + "/value", mode);
+}
+
+bool Gpio::isExported() const {
+  return PosixFilesystem::directoryExists((gpio_path_ + "/"));
 }

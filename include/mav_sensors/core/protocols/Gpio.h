@@ -27,8 +27,16 @@ class Gpio : public Driver {
    * @return true if successful, otherwise false and errno is set
    */
   bool close() override;
-  bool setDirection(GpioDirection gpio_direction);
-  bool setGpioState(GpioState gpio_state);
+
+  [[nodiscard]] bool setDirection(GpioDirection gpio_direction) const;
+  [[nodiscard]] bool setGpioState(GpioState gpio_state) const;
+
+  /**
+   * @brief Checks if the gpio pin is exported by sysfs. A gpio needs to be exported before it can
+   * be configured and used.
+   * @return true if exported, otherwise false
+   */
+  [[nodiscard]] bool isExported() const;
 
  private:
   std::string gpio_path_{};
