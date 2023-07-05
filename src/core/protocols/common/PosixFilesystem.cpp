@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-bool PosixFilesystem::write(const std::string &path, const std::string &message) noexcept{
+bool PosixFilesystem::write(const std::string &path, const std::string &message) noexcept {
   int fd = open((path).c_str(), O_WRONLY);
   if (fd == -1) {
     return false;
@@ -20,7 +20,7 @@ bool PosixFilesystem::write(const std::string &path, const std::string &message)
   return nbytes == static_cast<ssize_t>(message.size());
 }
 
-bool PosixFilesystem::read(const std::string &path, void *buffer, size_t buffer_size) noexcept{
+bool PosixFilesystem::read(const std::string &path, void *buffer, size_t buffer_size) noexcept {
   int fd = open(path.c_str(), O_RDONLY);
   if (fd == -1) {
     return false;
@@ -41,4 +41,8 @@ bool PosixFilesystem::directoryExists(const char *path) noexcept {
   }
 
   return S_ISDIR(fileInfo.st_mode);
+}
+
+bool PosixFilesystem::directoryExists(const std::string &path) noexcept {
+  return directoryExists(path.c_str());
 }

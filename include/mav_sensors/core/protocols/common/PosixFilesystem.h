@@ -33,5 +33,6 @@ class PosixFilesystem {
    * @param path Absolute path
    * @return true if directory exists, otherwise false
    */
+  [[nodiscard]] static bool directoryExists(const std::string& path) noexcept;
   [[nodiscard]] static bool directoryExists(const char *path) noexcept;
 };
