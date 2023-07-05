@@ -39,11 +39,22 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
    */
   explicit BMP390(SensorConfig sensorConfig) : cfg_(std::move(sensorConfig)){};
 
-  // Read function for BMP390 to be passed to BMP device driver.
+  // Read function to be passed to BMP3 device driver.
   static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
 
-  // Write function for BMP390 to be passed to BMP device driver.
+  // Write function to be passed to BMP3 device driver.
   static int8_t writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr);
+
+  /*!
+   *  @brief Sleep ms function to be passed to BMP3 device driver.
+   *
+   *  @param[in] period   : Sleep time in micro seconds.
+   *  @param[in] intf_ptr : Void pointer that can enable the linking of descriptors for interface
+   * related callbacks.
+   *
+   *  @return void.
+   */
+  static void usSleep(uint32_t period, [[maybe_unused]] void *intf_ptr) { usleep(period); }
 
   bool open() override {
     std::optional<std::string> pathOpt = cfg_.get("path");
@@ -148,23 +159,12 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
    *  @brief BMP device with communication settings and BMP configuration. The configuration will be
    * overwritten in initialization method.
    */
-  // bmp3_dev dev_{// Communication.
-  //               .intf_ptr = drv_,
-  //               .intf_ptr_gyro = &gyro_spi_driver_,
-  //               .intf = BMI08_SPI_INTF,
-  //               .variant = BMI088_VARIANT,
-  //               .accel_cfg = bmi08_cfg{.power = BMI08_ACCEL_PM_ACTIVE,
-  //                                      .range = BMI088_ACCEL_RANGE_24G,
-  //                                      .bw = BMI08_ACCEL_BW_NORMAL,
-  //                                      .odr = BMI08_ACCEL_ODR_1600_HZ},
-  //               .gyro_cfg = bmi08_cfg{.power = BMI08_GYRO_PM_NORMAL,
-  //                                     .range = BMI08_GYRO_RANGE_2000_DPS,
-  //                                     .bw = BMI08_GYRO_BW_532_ODR_2000_HZ,
-  //                                     .odr = BMI08_GYRO_BW_532_ODR_2000_HZ},
-  //               .read_write_len = 32,
-  //               .read = &(Bmi088::readReg),
-  //               .write = &(Bmi088::writeReg),
-  //               .delay_us = &(Bmi088::usSleep)};
+  bmp3_dev dev_{// Communication.
+                .intf_ptr = &drv_,
+                .intf = BMP3_SPI_INTF,
+                .read = &(BMP390::readReg),
+                .write = &(BMP390::writeReg),
+                .delay_us = &(BMP390::usSleep)};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
 };
@@ -209,7 +209,6 @@ std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
   return {};
 }
 
-// Read function for BMP390 to be passed to BMP device driver.
 template <>
 int8_t BMP390<Spi>::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr) {
   auto res =
@@ -218,7 +217,6 @@ int8_t BMP390<Spi>::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, v
   return res.empty() ? BMP3_E_COMM_FAIL : BMP3_OK;
 }
 
-// Write function for BMP390 to be passed to BMP device driver.
 template <>
 int8_t BMP390<Spi>::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
                              void *intf_ptr) {
