@@ -14,7 +14,6 @@ int main(int argc, char** argv) {
   SensorConfig sensorConfig;
   sensorConfig.set("path", "/dev/spidev2.0");
 
-
   BMP390<Spi> bmp390(sensorConfig);
   if (!bmp390.open()) {
     LOG(F, "Open failed");
@@ -22,11 +21,17 @@ int main(int argc, char** argv) {
   }
 
   for (int i = 0; i < 5; i++) {
-    auto a = bmp390.read();
-    bmp390.read<FluidPressure>();
-    bmp390.read<Temperature>();
-    double val = std::get<0>(a).value();
-    LOG(I, "Value: " << val);
+    auto measurements = bmp390.read();
+    LOG(I, std::get<0>(measurements).has_value(),
+        "Pressure: " << std::get<0>(measurements).value() << " C");
+    LOG(I, std::get<1>(measurements).has_value(),
+        "Temperature: " << std::get<1>(measurements).value() << " Pa");
+    auto m_t = bmp390.read<Temperature>();
+    LOG(I, std::get<0>(m_t).has_value(),
+        "Temperature (single measurement): " << std::get<0>(m_t).value() << " C");
+    auto m_p = bmp390.read<FluidPressure>();
+    LOG(I, std::get<0>(m_p).has_value(),
+        "Pressure (single measurement): " << std::get<0>(m_p).value() << " C");
     sleep(1);
   }
   bmp390.close();

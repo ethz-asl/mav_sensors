@@ -210,6 +210,8 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
       /* NOTE : Read status register again to clear data ready interrupt status */
       rslt = bmp3_get_status(&status_, &dev_);
       printErrorCodeResults("bmp3_get_status", rslt);
+    } else {
+      LOG(W, "Data not ready read all");
     }
     return measurement;
   }
@@ -250,37 +252,60 @@ byte BMP390<HardwareProtocol>::setEightBit(byte byte) {
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
-  std::vector<byte> a = drv_.xfer({setEightBit(TEMPERATURE_DATA)}, 4, 1000000);
+  auto measurement = Temperature::ReturnType();
+  auto rslt = bmp3_get_status(&status_, &dev_);
+  printErrorCodeResults("bmp3_get_status", rslt);
+  if (rslt != BMP3_OK) return measurement;
 
-  if (a.empty()) {
-    LOG(E, "Temperature read failed");
-    return {};
+  if (status_.intr.drdy == BMP3_ENABLE) {
+    rslt = bmp3_get_sensor_data(BMP3_TEMP, &data_, &dev_);
+    printErrorCodeResults("bmp3_get_sensor_data", rslt);
+    if (rslt != BMP3_OK) return measurement;
+
+    measurement = data_.temperature;
+
+    /* NOTE : Read status register again to clear data ready interrupt status */
+    rslt = bmp3_get_status(&status_, &dev_);
+    printErrorCodeResults("bmp3_get_status", rslt);
+  } else {
+    LOG(W, "Data not ready readTemperature");
   }
-
-  LOG(I, "a size: " << a.size());
-  LOG(I, "Temp: " << std::hex << +a[0] << " " << +a[1] << " " << +a[2] << " " << +a[3]);
-  return 0;
+  return measurement;
 }
 
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
-  std::vector<byte> a = drv_.xfer({setEightBit(PRESSURE_DATA)}, 4, 1000000);
-  LOG(I, "Pressure: " << std::hex << +a[0] << " " << +a[1] << " " << +a[2] << " " << +a[3]);
-  return 0;
+  auto measurement = Temperature::ReturnType();
+  auto rslt = bmp3_get_status(&status_, &dev_);
+  printErrorCodeResults("bmp3_get_status", rslt);
+  if (rslt != BMP3_OK) return measurement;
+
+  if (status_.intr.drdy == BMP3_ENABLE) {
+    rslt = bmp3_get_sensor_data(BMP3_PRESS, &data_, &dev_);
+    printErrorCodeResults("bmp3_get_sensor_data", rslt);
+    if (rslt != BMP3_OK) return measurement;
+
+    measurement = data_.pressure;
+
+    /* NOTE : Read status register again to clear data ready interrupt status */
+    rslt = bmp3_get_status(&status_, &dev_);
+    printErrorCodeResults("bmp3_get_status", rslt);
+  } else {
+    LOG(W, "Data not ready readPressure");
+  }
+  return measurement;
 }
 
 template <>
 template <>
 std::tuple<Temperature::ReturnType> BMP390<Spi>::read<Temperature>() {
-  readTemperature();
-  return {};
+  return {readTemperature()};
 }
 
 template <>
 template <>
 std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
-  readPressure();
-  return {};
+  return {readPressure()};
 }
 
 template <>
