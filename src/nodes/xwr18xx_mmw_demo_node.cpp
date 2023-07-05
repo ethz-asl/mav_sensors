@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
   sensorConfig.set("trigger", "true");
   sensorConfig.set("trigger_delay", "500"); //in ns
   sensorConfig.set("trigger_gpio", "443");
+  sensorConfig.set("trigger_gpio_name", "PR.00");
 
   Xwr18XxMmwDemo radar(sensorConfig);
   if (!radar.open()) {

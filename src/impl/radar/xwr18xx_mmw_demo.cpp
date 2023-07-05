@@ -176,6 +176,7 @@ bool Xwr18XxMmwDemo::open() {
   if (trigger.value() == "true") {
     ConfigOptional gpio = cfg_.get("trigger_gpio");
     ConfigOptional delay = cfg_.get("trigger_delay");
+    ConfigOptional gpio_name = cfg_.get("trigger_gpio_name");
     if (!gpio.has_value()) {
       LOG(E, "Sensor config must have field trigger_gpio");
       return false;
@@ -183,6 +184,11 @@ bool Xwr18XxMmwDemo::open() {
 
     if (!delay.has_value()) {
       LOG(W, "Trigger delay doesn't have field trigger_delay. Setting 500ns as default.");
+    }
+
+    if (!gpio_name.has_value()) {
+      LOG(E, "Sensor config must have field trigger_gpio_name");
+      return false;
     }
 
     try {
@@ -197,7 +203,7 @@ bool Xwr18XxMmwDemo::open() {
     }
 
     try {
-      gpio_ = Gpio(std::stoi(gpio.value()));
+      gpio_ = Gpio(std::stoi(gpio.value()), gpio_name.value());
     } catch (const std::invalid_argument& e) {
       LOG(E, "Field trigger_gpio is not of integral type");
       return false;
