@@ -19,6 +19,9 @@ int main(int argc, char** argv) {
   }
   sensorConfig.set("path_cfg", "/dev/ttyUSB0");
   sensorConfig.set("path_data", "/dev/ttyUSB1");
+  sensorConfig.set("trigger", "true");
+  sensorConfig.set("trigger_delay", "500"); //in us
+  sensorConfig.set("trigger_gpio", "443");
 
   Xwr18XxMmwDemo radar(sensorConfig);
   if (!radar.open()) {

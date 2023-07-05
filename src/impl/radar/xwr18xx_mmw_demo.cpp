@@ -112,13 +112,13 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
 }
 
 bool Xwr18XxMmwDemo::open() {
-  std::optional<std::string> path_cfg = cfg_.get("path_cfg");
+  ConfigOptional path_cfg = cfg_.get("path_cfg");
   if (!path_cfg.has_value()) {
     LOG(E, "Sensor config must have field path_cfg");
     return false;
   }
 
-  std::optional<std::string> path_data = cfg_.get("path_data");
+  ConfigOptional path_data = cfg_.get("path_data");
   if (!path_data.has_value()) {
     LOG(E, "Sensor config must have field path_data");
     return false;
@@ -138,13 +138,57 @@ bool Xwr18XxMmwDemo::open() {
   if (!drv_cfg_.setControlBaudRate(115200)) return false;
   if (!drv_data_.setControlBaudRate(921600)) return false;
 
-  std::optional<std::string> cfg_file_path = cfg_.get("path_cfg_file");
+  ConfigOptional cfg_file_path = cfg_.get("path_cfg_file");
   if (!cfg_file_path.has_value()) {
     LOG(I, "Sensor config doesn't have field path_cfg_file. Skipping config load.");
   } else {
     if (!loadConfig(cfg_file_path.value())) {
       LOG(W, "Skipped config load");
     }
+  }
+
+  ConfigOptional trigger = cfg_.get("trigger");
+
+  if (!trigger.has_value()) {
+    LOG(E, "Sensor config must have field trigger");
+    return false;
+  }
+
+  if (trigger.value() == "true") {
+
+    ConfigOptional gpio = cfg_.get("trigger_gpio");
+    ConfigOptional delay = cfg_.get("trigger_delay");
+    if (!gpio.has_value()) {
+      LOG(E, "Sensor config must have field trigger_gpio");
+      return false;
+    }
+
+    if (!delay.has_value()) {
+      LOG(W, "Trigger delay doesn't have field trigger_delay. Setting 500us as default.");
+    }
+
+    try {
+      int num = std::stoi(gpio.value());
+      gpio_ = Gpio(num);
+    } catch (const std::invalid_argument& e) {
+      LOG(E, "Field trigger_delay is not of integral type");
+      return false;
+    } catch (const std::out_of_range& e) {
+      LOG(E, "Value of field trigger_delay is too large");
+      return false;
+    }
+
+    if (!gpio_.value().open()) {
+      LOG(E, "Error on gpio open: " << ::strerror(errno));
+      return false;
+    } else {
+      LOG(I, "Opened Gpio: " << gpio_.value().getPath());
+    }
+    LOG(I, "Trigger: enabled");
+  } else if (trigger.value() == "false") {
+    LOG(I, "Trigger: disabled");
+  } else {
+    LOG(E, "Invalid value in field trigger. Valid values are: true/false");
   }
 
   return true;
@@ -173,8 +217,7 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     if (drv_cfg_.write(line.data(), line.length()) != line.length()) {
       LOG(E, "Error on config write" << ::strerror(errno));
     }
-    std::vector<byte> buf;
-    buf.resize(512);
+    std::vector<byte> buf(512);
     ssize_t res = drv_cfg_.read(buf.data(), buf.size(), kPrompt.size(), 50);
 
     if (res <= 0) {

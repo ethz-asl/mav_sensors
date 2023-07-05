@@ -6,6 +6,7 @@
 
 #include <log++.h>
 
+#include "mav_sensors/core/protocols/Gpio.h"
 #include "mav_sensors/core/protocols/Serial.h"
 #include "mav_sensors/core/sensor.h"
 #include "mav_sensors/core/sensor_types/Radar.h"
@@ -26,6 +27,15 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   bool close() override {
     bool success = drv_cfg_.close();
     success &= drv_data_.close();
+
+    if (gpio_.has_value()) {
+      if (gpio_.value().close()) {
+        LOG(I, "Closed gpio " << gpio_.value().getPath());
+      } else {
+        LOG(E, "Error on close " << ::strerror(errno));
+      }
+    }
+
     return success;
   }
 
@@ -48,6 +58,11 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
     *offset += sizeof(T);
     return value;
   }
+
+  bool trigger_enabled{false};
+  int trigger_delay{500};
+  std::optional<Gpio> gpio_;
+
 
   Serial drv_cfg_;
   Serial drv_data_;
