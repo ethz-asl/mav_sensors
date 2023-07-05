@@ -93,14 +93,21 @@ ssize_t Serial::write(const void* data, size_t len_data) const {
 }
 
 bool Serial::flushReadBuffer() const {
-  auto res = ::ioctl(fd_, TIOCPKT_FLUSHREAD);
-      LOG(E, res < 0, "Error on flushReadBuffer: " << strerror(errno));
+  // Flush the read buffer using termios2
+  auto res = ::ioctl(fd_, TCFLSH, TCIFLUSH);
+  LOG(E, res < 0, "Error on flushReadBuffer: " << strerror(errno));
   return res >= 0;
 }
 
 bool Serial::flushWriteBuffer() const {
-  auto res = ::ioctl(fd_, TIOCPKT_FLUSHWRITE);
+  auto res = ::ioctl(fd_, TCFLSH, TCIOFLUSH);
       LOG(E, res < 0, "Error on flushWriteBuffer: " << strerror(errno));
+  return res >= 0;
+}
+
+bool Serial::flushBuffers() const {
+  auto res = ::ioctl(fd_, TCFLSH, TCIOFLUSH);
+  LOG(E, res < 0, "Error on flushBuffers: " << strerror(errno));
   return res >= 0;
 }
 

@@ -54,6 +54,11 @@ class Serial : public Driver {
    */
   [[nodiscard]] bool flushWriteBuffer() const;
 
+  /**
+   * @brief Flush read and write buffer.
+   */
+  [[nodiscard]] bool flushBuffers() const;
+
   void setPath(std::string path);
 
   //! Setters cflag
