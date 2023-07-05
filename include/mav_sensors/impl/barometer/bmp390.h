@@ -99,12 +99,30 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     }
     usleep(1e3);
 
+    // Init.
     auto rslt = bmp3_init(&dev_);
     printErrorCodeResults("bmp3_init", rslt);
     if (rslt != BMP3_OK) {
       return false;
     }
     LOG(I, "BMP3 chip id is 0x" << std::hex << +dev_.chip_id);
+
+    // Settings.
+    settings_.int_settings.drdy_en = BMP3_ENABLE;
+    settings_.press_en = BMP3_ENABLE;
+    settings_.temp_en = BMP3_ENABLE;
+
+    settings_.odr_filter.press_os = BMP3_OVERSAMPLING_2X;
+    settings_.odr_filter.temp_os = BMP3_OVERSAMPLING_2X;
+    settings_.odr_filter.odr = BMP3_ODR_100_HZ;
+
+    uint16_t settings_sel = BMP3_SEL_PRESS_EN | BMP3_SEL_TEMP_EN | BMP3_SEL_PRESS_OS |
+                            BMP3_SEL_TEMP_OS | BMP3_SEL_ODR | BMP3_SEL_DRDY_EN;
+    rslt = bmp3_set_sensor_settings(settings_sel, &settings_, &dev_);
+    printErrorCodeResults("bmp3_set_sensor_settings", rslt);
+    if (rslt != BMP3_OK) {
+      return false;
+    }
 
     // std::vector<byte> res = drv_.xfer({setEightBit(CHIP_ID)}, 2, 1000000);
 
@@ -197,6 +215,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
                 .read = &(BMP390::readReg),
                 .write = &(BMP390::writeReg),
                 .delay_us = &(BMP390::usSleep)};
+  bmp3_settings settings_{0};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
 };
