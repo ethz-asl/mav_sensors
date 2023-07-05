@@ -64,29 +64,43 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     LOG(I, "Chip ID: 0x" << std::hex << +res[1]);
     usleep(1e3);
 
+    // Read error register
+    res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    LOG(I, "Error register: 0b" << std::bitset<CHAR_BIT>{res[1] & 0b111});
+
+    // Read status register
+    res = drv_->xfer({setEightBit(STATUS)}, 2, 1000000);
+    LOG(I, "Status register: 0b" << std::bitset<CHAR_BIT>{res[1]& 0b1110000});
+
     // Reset the device.
     res = drv_->xfer({CMD, 0xB6}, 0, 1000000);
+
+    // Wait for reset ready
+    while (!(drv_->xfer({setEightBit(STATUS)}, 2, 1000000)[1] & 0b10000)) {
+      LOG(I, "Resetting device...");
+      usleep(1e3);
+    }    
+
+    // // Set osrs_p to 8x, osrs_t to 1x
+    // res = drv_->xfer({OSR, 0b000011}, 0, 1000000);
+    // //  Read OSR settings.
+    // res = drv_->xfer({setEightBit(OSR)}, 2, 1000000);
+    // LOG(I, "OSR: 0b" << std::bitset<CHAR_BIT>{res[1]});
+
+    // // Set ODR to 50 Hz.
+    // res = drv_->xfer({ODR, 0x02}, 0, 1000000);
+    // // Read ODR settings.
+    // res = drv_->xfer({setEightBit(ODR)}, 2, 1000000);
+    // LOG(I, "ODR: 0b" << std::bitset<CHAR_BIT>{res[1]});
+
+    // // Set IIR filter to 2.
+    // res = drv_->xfer({CONFIG, 0b0100}, 0, 1000000);
 
     // Enable pressure and temperature sensor and normal mode.
     res = drv_->xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
     // Read power control settings.
     res = drv_->xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
     LOG(I, "PWR_CTRL: 0b" << std::bitset<CHAR_BIT>{res[1]});
-
-    // Set osrs_p to 8x, osrs_t to 1x
-    res = drv_->xfer({OSR, 0b000011}, 0, 1000000);
-    //  Read OSR settings.
-    res = drv_->xfer({setEightBit(OSR)}, 2, 1000000);
-    LOG(I, "OSR: 0b" << std::bitset<CHAR_BIT>{res[1]});
-
-    // Set ODR to 50 Hz.
-    res = drv_->xfer({ODR, 0x02}, 0, 1000000);
-    // Read ODR settings.
-    res = drv_->xfer({setEightBit(ODR)}, 2, 1000000);
-    LOG(I, "ODR: 0b" << std::bitset<CHAR_BIT>{res[1]});
-
-    // Set IIR filter to 2.
-    res = drv_->xfer({CONFIG, 0b0100}, 0, 1000000);
 
     return true;
   }
