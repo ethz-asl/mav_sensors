@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
                             << detection.velocity << " " << detection.snr << " "
                             << detection.noise);
     }
+    sleep(1);
   }
   radar.close();
 }
