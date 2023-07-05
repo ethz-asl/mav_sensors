@@ -12,13 +12,16 @@
 /**
  * Sensor specific properties for initialization
  */
+
+typedef std::optional<std::string> ConfigOptional;
+
 class SensorConfig {
  public:
   SensorConfig();
 
   void set(const std::string& key, const std::string& value);
 
-  [[nodiscard]] std::optional<std::string> get(const std::string& key) const;
+  [[nodiscard]] ConfigOptional get(const std::string& key) const;
 
  private:
   std::unordered_map<std::string, std::string> cfg_{};
