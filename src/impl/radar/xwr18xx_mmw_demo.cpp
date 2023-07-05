@@ -222,6 +222,12 @@ bool Xwr18XxMmwDemo::open() {
       LOG(W, "Gpio " << gpio_->getPath() << " already exported.");
     }
 
+    if (!gpio_->setDirection(GpioDirection::OUT)) {
+      LOG(E, "Error setting gpio direction: " << ::strerror(errno));
+      return false;
+    }
+    LOG(I, "Set gpio direction to out");
+
     trigger_enabled_ = true;
     LOG(I, "Trigger: enabled");
   } else if (trigger.value() == "false") {
