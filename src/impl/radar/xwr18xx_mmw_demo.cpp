@@ -4,9 +4,9 @@
 
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
 
-#include <termios.h>
-
 #include <fstream>
+
+#include <sys/ioctl.h>
 
 #include "mav_sensors/core/sensor_types/Radar.h"
 
@@ -31,10 +31,12 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   if (trigger_enabled_) {
-    //Flush both buffers, maybe move this to serial driver
-    tcflush(drv_cfg_.getFd(), TCIOFLUSH);
+    // Flush read buffer, maybe move this to serial driver
+    ::ioctl(drv_cfg_.getFd(), TIOCPKT_FLUSHREAD);
 
-    struct timespec sleepTime{0, trigger_delay_};
+    struct timespec sleepTime {
+      0, trigger_delay_
+    };
 
     if (!gpio_->setGpioState(GpioState::HIGH)) {
       LOG(E, "Failed to set gpio to high");
@@ -172,7 +174,6 @@ bool Xwr18XxMmwDemo::open() {
   }
 
   if (trigger.value() == "true") {
-
     ConfigOptional gpio = cfg_.get("trigger_gpio");
     ConfigOptional delay = cfg_.get("trigger_delay");
     if (!gpio.has_value()) {
@@ -212,7 +213,7 @@ bool Xwr18XxMmwDemo::open() {
       }
       LOG(I, "Opened Gpio: " << gpio_->getPath());
     } else {
-      LOG(W, "Gpio " << gpio_->getPath() <<" already exported.");
+      LOG(W, "Gpio " << gpio_->getPath() << " already exported.");
     }
 
     trigger_enabled_ = true;
@@ -234,7 +235,7 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     std::string line;
 
     while (std::getline(config_file, line)) {
-      if (!line.empty() && line[0] != '%') { //Ignore comments in config
+      if (!line.empty() && line[0] != '%') {  // Ignore comments in config
         line += "\x0D";
         lines.push_back(line);
       }
@@ -245,7 +246,7 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     return false;
   }
 
-  for (const auto& line: lines) {
+  for (const auto& line : lines) {
     if (drv_cfg_.write(line.data(), line.length()) != line.length()) {
       LOG(E, "Error on config write" << ::strerror(errno));
     }
