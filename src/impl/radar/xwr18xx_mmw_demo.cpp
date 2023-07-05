@@ -222,6 +222,7 @@ bool Xwr18XxMmwDemo::open() {
       LOG(W, "Gpio " << gpio_->getPath() << " already exported.");
     }
 
+    usleep(100000); // Wait for open.
     if (!gpio_->setDirection(GpioDirection::OUT)) {
       LOG(E, "Error setting gpio direction: " << ::strerror(errno));
       return false;
