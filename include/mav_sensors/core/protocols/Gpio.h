@@ -14,17 +14,25 @@ enum class GpioState { HIGH, LOW };
  */
 class Gpio : public Driver {
  public:
-  Gpio(int gpio_nr, std::string gpio_name, GpioDirection = GpioDirection::OUT);
+  explicit Gpio(int gpio_nr, GpioDirection = GpioDirection::OUT);
 
+  /**
+   * @brief Exports the gpio
+   * @return true if successful, otherwise false and errno is set
+   */
   bool open() override;
+
+  /**
+   * @brief Unexports the gpio
+   * @return true if successful, otherwise false and errno is set
+   */
   bool close() override;
   bool setDirection(GpioDirection gpio_direction);
-  bool setGpioState(GpioState gpio_mode);
+  bool setGpioState(GpioState gpio_state);
 
  private:
   std::string gpio_path_{};
   int gpio_nr_{};
-  std::string gpio_name_{};
   GpioDirection direction_{};
 
   inline static const constexpr char* SYSFS_PATH = "/sys/class";
