@@ -124,6 +124,14 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
       return false;
     }
 
+    // Operation mode
+    settings_.op_mode = BMP3_MODE_NORMAL;
+    rslt = bmp3_set_op_mode(&settings_, &dev_);
+    printErrorCodeResults("bmp3_set_op_mode", rslt);
+    if (rslt != BMP3_OK) {
+      return false;
+    }
+
     // std::vector<byte> res = drv_.xfer({setEightBit(CHIP_ID)}, 2, 1000000);
 
     // if (res[1] != CHIP_ID_DEFAULT) {
