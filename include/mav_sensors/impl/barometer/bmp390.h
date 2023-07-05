@@ -56,6 +56,31 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
    */
   static void usSleep(uint32_t period, [[maybe_unused]] void *intf_ptr) { usleep(period); }
 
+  void printErrorCodeResults(const std::string &api_name, int8_t rslt) const {
+    if (rslt != BMP3_OK) {
+      LOG(E, api_name.c_str() << "\t");
+      if (rslt == BMP3_E_NULL_PTR) {
+        LOG(E, "Error [" << int(rslt) << "] : Null pointer");
+      } else if (rslt == BMP3_E_COMM_FAIL) {
+        LOG(E, "Error [" << int(rslt) << "] : Communication failure");
+      } else if (rslt == BMP3_E_INVALID_ODR_OSR_SETTINGS) {
+        LOG(E, "Error [" << int(rslt) << "] : Invalid ODR OSR settings");
+      } else if (rslt == BMP3_E_CMD_EXEC_FAILED) {
+        LOG(E, "Error [" << int(rslt) << "] : Command execution failed");
+      } else if (rslt == BMP3_E_CONFIGURATION_ERR) {
+        LOG(E, "Error [" << int(rslt) << "] : Configuration error");
+      } else if (rslt == BMP3_E_INVALID_LEN) {
+        LOG(E, "Error [" << int(rslt) << "] : Invalid length");
+      } else if (rslt == BMP3_E_DEV_NOT_FOUND) {
+        LOG(E, "Error [" << int(rslt) << "] : Device not found");
+      } else if (rslt == BMP3_E_FIFO_WATERMARK_NOT_REACHED) {
+        LOG(E, "Error [" << int(rslt) << "] : FIFO watermark not reached");
+      } else {
+        LOG(E, "Error [" << int(rslt) << "] : Unknown error code");
+      }
+    }
+  }
+
   bool open() override {
     std::optional<std::string> pathOpt = cfg_.get("path");
 
@@ -69,7 +94,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
       return false;
     }
 
-    if (!drv_.setMode(SPI_MODE_3)) {
+    if (!drv_.setMode(SPI_MODE_0)) {
       return false;
     }
     usleep(1e3);
@@ -166,7 +191,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
                 .write = &(BMP390::writeReg),
                 .delay_us = &(BMP390::usSleep)};
 
-  inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
+  inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
 };
 
 template <typename HardwareProtocol>
