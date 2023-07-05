@@ -74,11 +74,11 @@ class Serial : public Driver {
   //! Getters
   [[nodiscard]] bool isOpen() const;
   [[nodiscard]] int getFd() const;
-  [[nodiscard]] const std::string& getPath() const;
+  [[nodiscard]] const std::string& getPath() const override;
   [[nodiscard]] int available() const;
 
  private:
   bool is_open_{false};
   int fd_{};
-  std::string path_{"/dev/ttyUSB0"};
+  std::string path_{};
 };

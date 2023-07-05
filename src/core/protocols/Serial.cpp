@@ -2,7 +2,6 @@
 
 #include <fcntl.h>
 
-#include <asm/termbits.h>
 #include <log++.h>
 #include <sys/ioctl.h>
 
@@ -427,3 +426,6 @@ int Serial::available() const {
 // readReturnMode = UART_RETURN_NEWLINE; readDataMode = UART_DATA_TEXT; writeDataMode =
 // UART_DATA_TEXT; readEcho = UART_ECHO_ON; baudRate = 115200; dataLength = UART_LEN_8; stopBits =
 // UART_STOP_ONE; parityType = UART_PAR_NONE;
+
+int Serial::getFd() const { return fd_; }
+
