@@ -12,9 +12,7 @@
 Serial::Serial() = default;
 Serial::~Serial() { ::close(fd_); }
 
-void Serial::setPath(std::string path) {
-  path_ = std::move(path);
-}
+void Serial::setPath(std::string path) { path_ = std::move(path); }
 
 const std::string& Serial::getPath() const { return path_; }
 
@@ -92,6 +90,18 @@ ssize_t Serial::write(const void* data, size_t len_data) const {
   ssize_t n = ::write(fd_, data, len_data);
   LOG(E, n < 0, "Error on write: " << strerror(errno));
   return n;
+}
+
+bool Serial::flushReadBuffer() const {
+  auto res = ::ioctl(fd_, TIOCPKT_FLUSHREAD);
+      LOG(E, res < 0, "Error on flushReadBuffer: " << strerror(errno));
+  return res >= 0;
+}
+
+bool Serial::flushWriteBuffer() const {
+  auto res = ::ioctl(fd_, TIOCPKT_FLUSHWRITE);
+      LOG(E, res < 0, "Error on flushWriteBuffer: " << strerror(errno));
+  return res >= 0;
 }
 
 bool Serial::setControlParityBit(bool bit) const {
@@ -430,4 +440,3 @@ int Serial::available() const {
 // UART_STOP_ONE; parityType = UART_PAR_NONE;
 
 int Serial::getFd() const { return fd_; }
-

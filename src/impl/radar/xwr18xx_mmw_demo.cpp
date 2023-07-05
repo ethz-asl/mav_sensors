@@ -32,7 +32,7 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   if (trigger_enabled_) {
     // Flush read buffer, maybe move this to serial driver
-    ::ioctl(drv_cfg_.getFd(), TIOCPKT_FLUSHREAD);
+    if (!drv_data_.flushReadBuffer()) return std::make_tuple(Radar::ReturnType());
 
     struct timespec sleepTime {
       0, trigger_delay_

@@ -44,6 +44,16 @@ class Serial : public Driver {
    */
   [[nodiscard]] ssize_t write(const void* data, size_t len_data) const;
 
+  /** 
+   * @brief Flush read buffer.
+  */
+  [[nodiscard]] bool flushReadBuffer() const;
+
+  /**
+   * @brief Flush write buffer.
+   */
+  [[nodiscard]] bool flushWriteBuffer() const;
+
   void setPath(std::string path);
 
   //! Setters cflag
