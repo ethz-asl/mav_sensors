@@ -18,6 +18,7 @@ namespace bmp390 {
   inline static constexpr const unsigned char INT_STATUS{0x11};
   inline static constexpr const unsigned char FIFO_LENGTH{0x12};
   inline static constexpr const unsigned char FIFO_DATA{0x14};
+  inline static constexpr const unsigned char CHIP_ID_DEFAULT{0x60};
 }
 
 #endif  // MAV_SENSORS_BMP390_SPI_IDS_H
