@@ -30,6 +30,7 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 }
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
+  auto now = std::chrono::system_clock::now();
   if (trigger_enabled_) {
     // Flush read buffer, maybe move this to serial driver
     if (!drv_data_.flushReadBuffer()) return std::make_tuple(Radar::ReturnType());
@@ -38,6 +39,8 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
       0, trigger_delay_
     };
 
+    // Overwrite time stamp just before triggering radar
+    now = std::chrono::system_clock::now();
     if (!gpio_->setGpioState(GpioState::HIGH)) {
       LOG(E, "Failed to set gpio to high " << ::strerror(errno));
     }
@@ -60,6 +63,10 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     } else {
       i = 0;  // Magic bit not found. Reset counter.
     }
+  }
+  if (!trigger_enabled_) {
+    // Overwrite time stamp just after reading magic key.
+    now = std::chrono::system_clock::now();
   }
 
   // Read header.
@@ -85,6 +92,8 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   auto num_tlvs = parse<uint32_t>(header, &offset);
   auto sub_frame_number = parse<uint32_t>(header, &offset);
   Radar::ReturnType measurement(num_detected_obj);
+  measurement.unix_stamp_ns =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
   measurement.hardware_stamp = time_cpu_cycles;
 
   // Read TLV.

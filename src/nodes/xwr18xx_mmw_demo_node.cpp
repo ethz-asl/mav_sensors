@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
   int num_reads = 10;
   while (num_reads--) {
     auto measurement = radar.read();
+    LOG(I, "Unix stamp: " << std::get<0>(measurement).unix_stamp_ns);
     LOG(I, "Hardware stamp: " << std::get<0>(measurement).hardware_stamp);
     LOG(I, "Number of detections: " << std::get<0>(measurement).cfar_detections.size());
     for (const auto& detection : std::get<0>(measurement).cfar_detections) {
