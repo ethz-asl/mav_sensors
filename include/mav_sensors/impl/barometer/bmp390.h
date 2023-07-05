@@ -53,17 +53,17 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
       return false;
     }
 
-    drv_ = new Spi(pathOpt.value());
-    if (!drv_->open()) {
+    drv_.setPath(pathOpt.value());
+    if (!drv_.open()) {
       return false;
     }
 
-    if (!drv_->setMode(SPI_MODE_3)) {
+    if (!drv_.setMode(SPI_MODE_3)) {
       return false;
     }
     usleep(1e3);
 
-    std::vector<byte> res = drv_->xfer({setEightBit(CHIP_ID)}, 2, 1000000);
+    std::vector<byte> res = drv_.xfer({setEightBit(CHIP_ID)}, 2, 1000000);
 
     if (res[1] != CHIP_ID_DEFAULT) {
       LOG(E, "Chip ID read failed");
@@ -73,18 +73,18 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     usleep(1e3);
 
     // Read error register
-    res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    res = drv_.xfer({setEightBit(ERR_REG)}, 2, 1000000);
     LOG(I, "Error register before reset: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
 
     // Read status register
-    res = drv_->xfer({setEightBit(STATUS)}, 2, 1000000);
+    res = drv_.xfer({setEightBit(STATUS)}, 2, 1000000);
     LOG(I, "Status register: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b1110000)});
 
     // Reset the device.
-    res = drv_->xfer({CMD, 0xB6}, 0, 1000000);
+    res = drv_.xfer({CMD, 0xB6}, 0, 1000000);
 
     // Wait for reset ready
-    while (!(drv_->xfer({setEightBit(STATUS)}, 2, 1000000)[1] & 0b10000)) {
+    while (!(drv_.xfer({setEightBit(STATUS)}, 2, 1000000)[1] & 0b10000)) {
       LOG(I, "Resetting device...");
       usleep(1e5);
     }
@@ -92,42 +92,42 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     // Check device is sleeping
 
     // Read power control settings.
-    res = drv_->xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
+    res = drv_.xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
     LOG(I, "PWR_CTRL before settings: 0b" << std::bitset<CHAR_BIT>{res[1]});
     usleep(1e5);
 
     // // Set osrs_p to 8x, osrs_t to 1x
-    // res = drv_->xfer({OSR, 0b000011}, 0, 1000000);
+    // res = drv_.xfer({OSR, 0b000011}, 0, 1000000);
     // //  Read OSR settings.
-    // res = drv_->xfer({setEightBit(OSR)}, 2, 1000000);
+    // res = drv_.xfer({setEightBit(OSR)}, 2, 1000000);
     // LOG(I, "OSR: 0b" << std::bitset<CHAR_BIT>{res[1]});
 
     // // Set ODR to 50 Hz.
-    // res = drv_->xfer({ODR, 0x02}, 0, 1000000);
+    // res = drv_.xfer({ODR, 0x02}, 0, 1000000);
     // // Read ODR settings.
-    // res = drv_->xfer({setEightBit(ODR)}, 2, 1000000);
+    // res = drv_.xfer({setEightBit(ODR)}, 2, 1000000);
     // LOG(I, "ODR: 0b" << std::bitset<CHAR_BIT>{res[1]});
 
     // // Set IIR filter to 2.
-    // res = drv_->xfer({CONFIG, 0b0100}, 0, 1000000);
+    // res = drv_.xfer({CONFIG, 0b0100}, 0, 1000000);
 
     // Enable pressure and temperature sensor and normal mode.
-    res = drv_->xfer({PWR_CTRL, 0b00110011}, 2, 1000000);
+    res = drv_.xfer({PWR_CTRL, 0b00110011}, 2, 1000000);
     // Read power control settings.
-    res = drv_->xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
+    res = drv_.xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
     LOG(I, "PWR_CTRL: 0b" << std::bitset<CHAR_BIT>{res[1]});
     usleep(1e5);
 
-    res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    res = drv_.xfer({setEightBit(ERR_REG)}, 2, 1000000);
     LOG(I, "Error register after power: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
 
     return true;
   }
 
   typename super::TupleReturnType read() override {
-    drv_->xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
+    drv_.xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
     usleep(1e5);
-    auto res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    auto res = drv_.xfer({setEightBit(ERR_REG)}, 2, 1000000);
     LOG(I, "Error register after power: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
     return std::make_tuple(readPressure(), readTemperature());
   }
@@ -141,8 +141,30 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   byte setEightBit(byte byte);
   Temperature::ReturnType readTemperature();
   FluidPressure::ReturnType readPressure();
-  Spi *drv_{nullptr};
+  Spi drv_;
   SensorConfig cfg_;
+
+  /*!
+   *  @brief BMP device with communication settings and BMP configuration. The configuration will be
+   * overwritten in initialization method.
+   */
+  // bmp3_dev dev_{// Communication.
+  //               .intf_ptr = drv_,
+  //               .intf_ptr_gyro = &gyro_spi_driver_,
+  //               .intf = BMI08_SPI_INTF,
+  //               .variant = BMI088_VARIANT,
+  //               .accel_cfg = bmi08_cfg{.power = BMI08_ACCEL_PM_ACTIVE,
+  //                                      .range = BMI088_ACCEL_RANGE_24G,
+  //                                      .bw = BMI08_ACCEL_BW_NORMAL,
+  //                                      .odr = BMI08_ACCEL_ODR_1600_HZ},
+  //               .gyro_cfg = bmi08_cfg{.power = BMI08_GYRO_PM_NORMAL,
+  //                                     .range = BMI08_GYRO_RANGE_2000_DPS,
+  //                                     .bw = BMI08_GYRO_BW_532_ODR_2000_HZ,
+  //                                     .odr = BMI08_GYRO_BW_532_ODR_2000_HZ},
+  //               .read_write_len = 32,
+  //               .read = &(Bmi088::readReg),
+  //               .write = &(Bmi088::writeReg),
+  //               .delay_us = &(Bmi088::usSleep)};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
 };
@@ -154,7 +176,7 @@ byte BMP390<HardwareProtocol>::setEightBit(byte byte) {
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
-  std::vector<byte> a = drv_->xfer({setEightBit(TEMPERATURE_DATA)}, 4, 1000000);
+  std::vector<byte> a = drv_.xfer({setEightBit(TEMPERATURE_DATA)}, 4, 1000000);
 
   if (a.empty()) {
     LOG(E, "Temperature read failed");
@@ -168,7 +190,7 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
 
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
-  std::vector<byte> a = drv_->xfer({setEightBit(PRESSURE_DATA)}, 4, 1000000);
+  std::vector<byte> a = drv_.xfer({setEightBit(PRESSURE_DATA)}, 4, 1000000);
   LOG(I, "Pressure: " << std::hex << +a[0] << " " << +a[1] << " " << +a[2] << " " << +a[3]);
   return 0;
 }
