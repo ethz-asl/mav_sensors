@@ -18,6 +18,11 @@ namespace bmp390 {
   inline static constexpr const unsigned char INT_STATUS{0x11};
   inline static constexpr const unsigned char FIFO_LENGTH{0x12};
   inline static constexpr const unsigned char FIFO_DATA{0x14};
+  inline static constexpr const unsigned char PWR_CTRL{0x18};
+  inline static constexpr const unsigned char OSR{0x1C};
+  inline static constexpr const unsigned char ODR{0x1D};
+  inline static constexpr const unsigned char CONFIG{0x1F};
+  inline static constexpr const unsigned char CMD{0x7E};
   inline static constexpr const unsigned char CHIP_ID_DEFAULT{0x60};
 }
 
