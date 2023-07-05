@@ -21,10 +21,13 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  auto a = bmp390.read();
-  bmp390.read<FluidPressure>();
-  bmp390.read<Temperature>();
-  double val = std::get<0>(a).value();
-  LOG(I, "Value: " << val);
+  for (int i = 0; i < 5; i++) {
+    auto a = bmp390.read();
+    bmp390.read<FluidPressure>();
+    bmp390.read<Temperature>();
+    double val = std::get<0>(a).value();
+    LOG(I, "Value: " << val);
+    sleep(1);
+  }
   bmp390.close();
 }
