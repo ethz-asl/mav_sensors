@@ -15,8 +15,8 @@ catkin_package(
 ## Build ##
 ###########
 include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
+        include lib/BMP3-Sensor-API
+                ${catkin_INCLUDE_DIRS}
 )
 
 add_compile_definitions(MODE_ROSLOG)
@@ -37,9 +37,11 @@ add_library(${PROJECT_NAME}
         src/impl/radar/xwr18xx_mmw_demo.cpp
         )
 
-target_link_libraries(${PROJECT_NAME}
-        ${catkin_LIBRARIES}
-        )
+# Bosch BMP3 API
+add_library(${PROJECT_NAME}_BMP3 lib/BMP3-Sensor-API/bmp3.c)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_BMP3)
+
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_node src/main.cpp)
 

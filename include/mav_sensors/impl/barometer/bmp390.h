@@ -15,6 +15,9 @@
 #include <linux/spi/spidev.h>
 #include <log++.h>
 
+#include <bmp3.h>
+#include <bmp3_defs.h>
+
 #include "mav_sensors/core/protocols/Spi.h"
 #include "mav_sensors/core/sensor_config.h"
 #include "mav_sensors/core/sensor_types/FluidPressure.h"
@@ -36,6 +39,12 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
    *
    */
   explicit BMP390(SensorConfig sensorConfig) : cfg_(std::move(sensorConfig)){};
+
+  // Read function for BMP390 to be passed to BMP device driver.
+  static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
+
+  // Write function for BMP390 to be passed to BMP device driver.
+  static int8_t writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr);
 
   bool open() override {
     std::optional<std::string> pathOpt = cfg_.get("path");
@@ -70,7 +79,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 
     // Read status register
     res = drv_->xfer({setEightBit(STATUS)}, 2, 1000000);
-    LOG(I, "Status register: 0b" << std::bitset<CHAR_BIT>{+(res[1]& 0b1110000)});
+    LOG(I, "Status register: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b1110000)});
 
     // Reset the device.
     res = drv_->xfer({CMD, 0xB6}, 0, 1000000);
@@ -79,7 +88,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     while (!(drv_->xfer({setEightBit(STATUS)}, 2, 1000000)[1] & 0b10000)) {
       LOG(I, "Resetting device...");
       usleep(1e5);
-    }    
+    }
 
     // Check device is sleeping
 
@@ -117,10 +126,9 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   }
 
   typename super::TupleReturnType read() override {
-    
     drv_->xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
     usleep(1e5);
-   auto res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    auto res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
     LOG(I, "Error register after power: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
     return std::make_tuple(readPressure(), readTemperature());
   }
@@ -134,7 +142,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   byte setEightBit(byte byte);
   Temperature::ReturnType readTemperature();
   FluidPressure::ReturnType readPressure();
-  Spi* drv_{nullptr};
+  Spi *drv_{nullptr};
   SensorConfig cfg_;
 };
 
@@ -177,3 +185,13 @@ std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
   readPressure();
   return {};
 }
+
+// // Read function for BMP390 to be passed to BMP device driver.
+// template <>
+// static int8_t BMP390<Spi>::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
+//                                    void *intf_ptr) {}
+
+// // Write function for BMP390 to be passed to BMP device driver.
+// template <>
+// static int8_t BMP390<Spi>::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
+//                                     void *intf_ptr) {}
