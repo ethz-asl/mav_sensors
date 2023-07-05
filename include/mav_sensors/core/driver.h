@@ -10,13 +10,19 @@
 
 class Driver {
  public:
+  Driver() = default;
+
+  /**
+   * @param path file path
+   */
+  explicit Driver(std::string path);
+
   virtual bool open() = 0;
 
   virtual bool close() = 0;
 
-  virtual const std::string& getPath() const;
+  [[nodiscard]] virtual const std::string& getPath() const;
 
  protected:
   std::string path_;
-  SensorConfig cfg_;
 };

@@ -44,7 +44,6 @@ class Gpio : public Driver {
   [[nodiscard]] bool isExported() const;
 
  private:
-  std::string gpio_path_{};
   int gpio_nr_{};
   GpioDirection direction_{};
 

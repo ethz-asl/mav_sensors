@@ -80,5 +80,4 @@ class Serial : public Driver {
  private:
   bool is_open_{false};
   int fd_{};
-  std::string path_{};
 };

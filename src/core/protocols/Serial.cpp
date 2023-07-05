@@ -9,10 +9,12 @@
 
 // Created by brik on 01.07.23.
 
-Serial::Serial() {}
+Serial::Serial() = default;
 Serial::~Serial() { ::close(fd_); }
 
-void Serial::setPath(std::string path) { path_ = std::move(path); }
+void Serial::setPath(std::string path) {
+  path_ = std::move(path);
+}
 
 const std::string& Serial::getPath() const { return path_; }
 
