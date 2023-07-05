@@ -222,12 +222,17 @@ bool Xwr18XxMmwDemo::open() {
       LOG(W, "Gpio " << gpio_->getPath() << " already exported.");
     }
 
-    usleep(100000); // Wait for open.
+    usleep(100000);  // Wait for open.
     if (!gpio_->setDirection(GpioDirection::OUT)) {
       LOG(E, "Error setting gpio direction: " << ::strerror(errno));
       return false;
     }
     LOG(I, "Set gpio direction to out");
+
+    // Set GPIO low at startup. Radar will not measure.
+    if (!gpio_->setGpioState(GpioState::LOW)) {
+      LOG(E, "Failed to set gpio to low " << ::strerror(errno));
+    }
 
     trigger_enabled_ = true;
     LOG(I, "Trigger: enabled");
