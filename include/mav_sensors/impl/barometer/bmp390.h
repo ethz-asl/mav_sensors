@@ -66,11 +66,11 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 
     // Read error register
     res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
-    LOG(I, "Error register: 0b" << std::bitset<CHAR_BIT>{res[1] & 0b111});
+    LOG(I, "Error register before reset: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
 
     // Read status register
     res = drv_->xfer({setEightBit(STATUS)}, 2, 1000000);
-    LOG(I, "Status register: 0b" << std::bitset<CHAR_BIT>{res[1]& 0b1110000});
+    LOG(I, "Status register: 0b" << std::bitset<CHAR_BIT>{+(res[1]& 0b1110000)});
 
     // Reset the device.
     res = drv_->xfer({CMD, 0xB6}, 0, 1000000);
@@ -78,8 +78,15 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     // Wait for reset ready
     while (!(drv_->xfer({setEightBit(STATUS)}, 2, 1000000)[1] & 0b10000)) {
       LOG(I, "Resetting device...");
-      usleep(1e3);
+      usleep(1e5);
     }    
+
+    // Check device is sleeping
+
+    // Read power control settings.
+    res = drv_->xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
+    LOG(I, "PWR_CTRL before settings: 0b" << std::bitset<CHAR_BIT>{res[1]});
+    usleep(1e5);
 
     // // Set osrs_p to 8x, osrs_t to 1x
     // res = drv_->xfer({OSR, 0b000011}, 0, 1000000);
@@ -97,15 +104,24 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     // res = drv_->xfer({CONFIG, 0b0100}, 0, 1000000);
 
     // Enable pressure and temperature sensor and normal mode.
-    res = drv_->xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
+    res = drv_->xfer({PWR_CTRL, 0b00110011}, 2, 1000000);
     // Read power control settings.
     res = drv_->xfer({setEightBit(PWR_CTRL)}, 2, 1000000);
     LOG(I, "PWR_CTRL: 0b" << std::bitset<CHAR_BIT>{res[1]});
+    usleep(1e5);
+
+    res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    LOG(I, "Error register after power: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
 
     return true;
   }
 
   typename super::TupleReturnType read() override {
+    
+    drv_->xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
+    usleep(1e5);
+   auto res = drv_->xfer({setEightBit(ERR_REG)}, 2, 1000000);
+    LOG(I, "Error register after power: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
     return std::make_tuple(readPressure(), readTemperature());
   }
 
