@@ -14,7 +14,12 @@ enum class GpioState { HIGH, LOW };
  */
 class Gpio : public Driver {
  public:
-  explicit Gpio(int gpio_nr, GpioDirection = GpioDirection::OUT);
+  /**
+   * @param gpio_nr gpio number (e.g. gpio-443)
+   * @param name sysfs filename of exported pin
+   * @param direction gpio direction
+   */
+  Gpio(int gpio_nr, const std::string& name, GpioDirection direction = GpioDirection::OUT);
 
   /**
    * @brief Exports the gpio
@@ -28,7 +33,7 @@ class Gpio : public Driver {
    */
   bool close() override;
 
-  [[nodiscard]] bool setDirection(GpioDirection gpio_direction) const;
+  [[nodiscard]] bool setDirection(GpioDirection gpio_direction);
   [[nodiscard]] bool setGpioState(GpioState gpio_state) const;
 
   /**
