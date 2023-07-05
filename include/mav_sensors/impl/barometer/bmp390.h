@@ -21,9 +21,6 @@
 #include "mav_sensors/core/sensor_config.h"
 #include "mav_sensors/core/sensor_types/FluidPressure.h"
 #include "mav_sensors/core/sensor_types/Temperature.h"
-#include "mav_sensors/impl/barometer/bmp390_spi_ids.h"
-
-using namespace bmp390;
 
 template <typename HardwareProtocol>
 class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
