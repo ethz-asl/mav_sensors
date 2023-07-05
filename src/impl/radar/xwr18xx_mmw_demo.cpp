@@ -39,11 +39,11 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     };
 
     if (!gpio_->setGpioState(GpioState::HIGH)) {
-      LOG(E, "Failed to set gpio to high");
+      LOG(E, "Failed to set gpio to high " << ::strerror(errno));
     }
     nanosleep(&sleepTime, nullptr);
     if (!gpio_->setGpioState(GpioState::LOW)) {
-      LOG(E, "Failed to set gpio to low");
+      LOG(E, "Failed to set gpio to low " << ::strerror(errno));
     }
   }
 
