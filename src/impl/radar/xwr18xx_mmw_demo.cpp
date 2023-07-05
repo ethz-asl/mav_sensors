@@ -4,6 +4,8 @@
 
 #include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
 
+#include <termios.h>
+
 #include <fstream>
 
 #include "mav_sensors/core/sensor_types/Radar.h"
@@ -28,6 +30,21 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 }
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
+  if (trigger_enabled_) {
+    //Flush both buffers, maybe move this to serial driver
+    tcflush(drv_cfg_.getFd(), TCIOFLUSH);
+
+    struct timespec sleepTime{0, trigger_delay_};
+
+    if (!gpio_->setGpioState(GpioState::HIGH)) {
+      LOG(E, "Failed to set gpio to high");
+    }
+    nanosleep(&sleepTime, nullptr);
+    if (!gpio_->setGpioState(GpioState::LOW)) {
+      LOG(E, "Failed to set gpio to low");
+    }
+  }
+
   // Read data from serial buffer and detect magic key
   std::vector<byte> magic_bit(1);
   size_t i = 0;
@@ -164,12 +181,12 @@ bool Xwr18XxMmwDemo::open() {
     }
 
     if (!delay.has_value()) {
-      LOG(W, "Trigger delay doesn't have field trigger_delay. Setting 500us as default.");
+      LOG(W, "Trigger delay doesn't have field trigger_delay. Setting 500ns as default.");
     }
 
     try {
-      int num = std::stoi(gpio.value());
-      gpio_ = Gpio(num);
+      trigger_delay_ = std::stoi(delay.value());
+      LOG(I, "Trigger delay set to: " << trigger_delay_);
     } catch (const std::invalid_argument& e) {
       LOG(E, "Field trigger_delay is not of integral type");
       return false;
@@ -178,12 +195,27 @@ bool Xwr18XxMmwDemo::open() {
       return false;
     }
 
-    if (!gpio_.value().open()) {
-      LOG(E, "Error on gpio open: " << ::strerror(errno));
+    try {
+      gpio_ = Gpio(std::stoi(gpio.value()));
+    } catch (const std::invalid_argument& e) {
+      LOG(E, "Field trigger_gpio is not of integral type");
       return false;
-    } else {
-      LOG(I, "Opened Gpio: " << gpio_.value().getPath());
+    } catch (const std::out_of_range& e) {
+      LOG(E, "Value of field trigger_gpio is too large");
+      return false;
     }
+
+    if (!gpio_->isExported()) {
+      if (!gpio_->open()) {
+        LOG(E, "Error on gpio open: " << ::strerror(errno));
+        return false;
+      }
+      LOG(I, "Opened Gpio: " << gpio_->getPath());
+    } else {
+      LOG(W, "Gpio " << gpio_->getPath() <<" already exported.");
+    }
+
+    trigger_enabled_ = true;
     LOG(I, "Trigger: enabled");
   } else if (trigger.value() == "false") {
     LOG(I, "Trigger: disabled");

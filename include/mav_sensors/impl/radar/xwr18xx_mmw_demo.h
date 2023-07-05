@@ -59,8 +59,8 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
     return value;
   }
 
-  bool trigger_enabled{false};
-  int trigger_delay{500};
+  bool trigger_enabled_{false};
+  int trigger_delay_{500};
   std::optional<Gpio> gpio_;
 
 
