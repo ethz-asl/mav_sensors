@@ -194,11 +194,24 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   }
 
   typename super::TupleReturnType read() override {
-    drv_.xfer({PWR_CTRL, 0b00110011}, 0, 1000000);
-    usleep(1e5);
-    auto res = drv_.xfer({setEightBit(ERR_REG)}, 2, 1000000);
-    LOG(I, "Error register after power: 0b" << std::bitset<CHAR_BIT>{+(res[1] & 0b111)});
-    return std::make_tuple(readPressure(), readTemperature());
+    auto measurement = std::make_tuple(FluidPressure::ReturnType(), Temperature::ReturnType());
+    auto rslt = bmp3_get_status(&status_, &dev_);
+    printErrorCodeResults("bmp3_get_status", rslt);
+    if (rslt != BMP3_OK) return measurement;
+
+    if (status_.intr.drdy == BMP3_ENABLE) {
+      rslt = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_);
+      printErrorCodeResults("bmp3_get_sensor_data", rslt);
+      if (rslt != BMP3_OK) return measurement;
+
+      std::get<0>(measurement) = data_.pressure;
+      std::get<1>(measurement) = data_.temperature;
+
+      /* NOTE : Read status register again to clear data ready interrupt status */
+      rslt = bmp3_get_status(&status_, &dev_);
+      printErrorCodeResults("bmp3_get_status", rslt);
+    }
+    return measurement;
   }
 
   template <typename... T>
@@ -224,6 +237,8 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
                 .write = &(BMP390::writeReg),
                 .delay_us = &(BMP390::usSleep)};
   bmp3_settings settings_{0};
+  bmp3_data data_ = {0};
+  bmp3_status status_ = {{0}};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
 };
