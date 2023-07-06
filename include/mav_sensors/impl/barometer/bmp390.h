@@ -163,7 +163,6 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   bool close() override { return false; }
 
  private:
-  byte setEightBit(byte byte);
   Temperature::ReturnType readTemperature();
   FluidPressure::ReturnType readPressure();
   Spi drv_;
@@ -185,11 +184,6 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
 };
-
-template <typename HardwareProtocol>
-byte BMP390<HardwareProtocol>::setEightBit(byte byte) {
-  return byte | 0x80;
-}
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
