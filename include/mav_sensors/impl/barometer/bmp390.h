@@ -127,11 +127,8 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
     settings_.op_mode = BMP3_MODE_NORMAL;
     rslt = bmp3_set_op_mode(&settings_, &dev_);
     printErrorCodeResults("bmp3_set_op_mode", rslt);
-    if (rslt != BMP3_OK) {
-      return false;
-    }
 
-    return true;
+    return rslt == BMP3_OK;
   }
 
   typename super::TupleReturnType read() override {
