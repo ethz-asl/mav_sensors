@@ -8,6 +8,6 @@
 
 class FluidPressure : public SensorType {
  public:
-  typedef double ReturnType;
+  typedef std::optional<double> ReturnType;
 };
 

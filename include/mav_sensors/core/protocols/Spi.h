@@ -11,9 +11,11 @@ typedef unsigned char byte;
 
 class Spi : public Driver {
  public:
+  explicit Spi();
   explicit Spi(std::string path);
   bool open() override;
   [[nodiscard]] bool setMode(uint8_t mode) const;
+  void setPath(std::string path);
 
   /**
    * Spi half-duplex transaction
