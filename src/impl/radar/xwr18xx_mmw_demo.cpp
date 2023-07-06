@@ -30,10 +30,12 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 }
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
+  std::tuple<Radar::ReturnType> measurement;
+
   auto now = std::chrono::system_clock::now();
   if (trigger_enabled_) {
     // Flush read buffer, maybe move this to serial driver
-    if (!drv_data_.flushReadBuffer()) return std::make_tuple(Radar::ReturnType());
+    if (!drv_data_.flushReadBuffer()) return measurement;
 
     struct timespec sleepTime {
       0, trigger_delay_
@@ -59,7 +61,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
       i++;  // Magic bit found. Increment counter.
     } else if (!drv_data_.available()) {
       LOG(W, "Magic key not found.");
-      return std::make_tuple(Radar::ReturnType());
+      return measurement;
     } else {
       i = 0;  // Magic bit not found. Reset counter.
     }
@@ -74,7 +76,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   auto n = drv_data_.read(header.data(), header.size(), header.size(), kTimeout);
   if (n != header.size()) {
     LOG(E, "Failed to read header");
-    return std::make_tuple(Radar::ReturnType());
+    return measurement;
   }
 
   // Parse header.
@@ -91,10 +93,10 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   auto num_detected_obj = parse<uint32_t>(header, &offset);
   auto num_tlvs = parse<uint32_t>(header, &offset);
   auto sub_frame_number = parse<uint32_t>(header, &offset);
-  Radar::ReturnType measurement(num_detected_obj);
-  measurement.unix_stamp_ns =
+  std::get<Radar>(measurement).cfar_detections.resize(num_detected_obj);
+  std::get<Radar>(measurement).unix_stamp_ns =
       std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-  measurement.hardware_stamp = time_cpu_cycles;
+  std::get<Radar>(measurement).hardware_stamp = time_cpu_cycles;
 
   // Read TLV.
   std::vector<byte> tlv(total_packet_len - header.size() - 4 * sizeof(uint16_t));
@@ -106,7 +108,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     n = drv_data_.read(chunk.data(), chunk.size(), n_chunk, kTimeout);
     if (n <= 0) {
       LOG(E, "Failed to read TLV: " << n << " out of " << +n_chunk << " bytes read");
-      return std::make_tuple(measurement);
+      return measurement;
     }
     std::copy(chunk.begin(), chunk.begin() + n, tlv.begin() + tlv.size() - bytes_missing);
     bytes_missing -= n;
@@ -120,15 +122,15 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     if (tlv_type == MMWDEMO_OUTPUT_MSG_DETECTED_POINTS) {
       // Point cloud.
       for (size_t i = 0; i < num_detected_obj; ++i) {
-        measurement.cfar_detections[i].x = parse<float>(tlv, &offset);
-        measurement.cfar_detections[i].y = parse<float>(tlv, &offset);
-        measurement.cfar_detections[i].z = parse<float>(tlv, &offset);
-        measurement.cfar_detections[i].velocity = parse<float>(tlv, &offset);
+        std::get<Radar>(measurement).cfar_detections[i].x = parse<float>(tlv, &offset);
+        std::get<Radar>(measurement).cfar_detections[i].y = parse<float>(tlv, &offset);
+        std::get<Radar>(measurement).cfar_detections[i].z = parse<float>(tlv, &offset);
+        std::get<Radar>(measurement).cfar_detections[i].velocity = parse<float>(tlv, &offset);
       }
     } else if (tlv_type == MMWDEMO_OUTPUT_MSG_DETECTED_POINTS_SIDE_INFO) {
       for (size_t i = 0; i < num_detected_obj; ++i) {
-        measurement.cfar_detections[i].snr = parse<int16_t>(tlv, &offset);
-        measurement.cfar_detections[i].noise = parse<int16_t>(tlv, &offset);
+        std::get<Radar>(measurement).cfar_detections[i].snr = parse<int16_t>(tlv, &offset);
+        std::get<Radar>(measurement).cfar_detections[i].noise = parse<int16_t>(tlv, &offset);
       }
     } else {
       // Skip.
@@ -136,7 +138,7 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
     }
   }
 
-  return std::make_tuple(measurement);
+  return measurement;
 }
 
 bool Xwr18XxMmwDemo::open() {

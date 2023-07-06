@@ -23,15 +23,15 @@ int main(int argc, char** argv) {
   for (int i = 0; i < 5; i++) {
     auto measurements = bmp390.read();
     LOG(I, std::get<0>(measurements).has_value(),
-        "Pressure: " << std::get<0>(measurements).value() << " C");
+        "Pressure: " << std::get<0>(measurements).value() << " Pa");
     LOG(I, std::get<1>(measurements).has_value(),
-        "Temperature: " << std::get<1>(measurements).value() << " Pa");
+        "Temperature: " << std::get<1>(measurements).value() << " C");
     auto m_t = bmp390.read<Temperature>();
     LOG(I, std::get<0>(m_t).has_value(),
         "Temperature (single measurement): " << std::get<0>(m_t).value() << " C");
     auto m_p = bmp390.read<FluidPressure>();
     LOG(I, std::get<0>(m_p).has_value(),
-        "Pressure (single measurement): " << std::get<0>(m_p).value() << " C");
+        "Pressure (single measurement): " << std::get<0>(m_p).value() << " Pa");
     sleep(1);
   }
   bmp390.close();

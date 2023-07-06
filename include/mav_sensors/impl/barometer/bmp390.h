@@ -135,7 +135,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   }
 
   typename super::TupleReturnType read() override {
-    auto measurement = std::make_tuple(FluidPressure::ReturnType(), Temperature::ReturnType());
+    std::tuple<FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
     auto rslt = bmp3_get_status(&status_, &dev_);
     printErrorCodeResults("bmp3_get_status", rslt);
     if (rslt != BMP3_OK) return measurement;
@@ -187,7 +187,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
-  auto measurement = Temperature::ReturnType();
+  Temperature::ReturnType measurement{};
   auto rslt = bmp3_get_status(&status_, &dev_);
   printErrorCodeResults("bmp3_get_status", rslt);
   if (rslt != BMP3_OK) return measurement;
@@ -210,7 +210,7 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
 
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
-  auto measurement = Temperature::ReturnType();
+  FluidPressure::ReturnType measurement{};
   auto rslt = bmp3_get_status(&status_, &dev_);
   printErrorCodeResults("bmp3_get_status", rslt);
   if (rslt != BMP3_OK) return measurement;
