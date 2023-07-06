@@ -16,6 +16,8 @@
 
 Spi::Spi() = default;
 
+Spi::Spi(std::string path) : path_(std::move(path)) {}
+
 void Spi::setPath(std::string path) { path_ = std::move(path); }
 
 bool Spi::open() {
