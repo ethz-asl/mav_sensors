@@ -53,7 +53,85 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
    */
   static void usSleep(uint32_t period, [[maybe_unused]] void *intf_ptr) { usleep(period); }
 
-  void printErrorCodeResults(const std::string &api_name, int8_t rslt) const {
+  bool open() override {
+    std::optional<std::string> pathOpt = cfg_.get("path");
+
+    if (!pathOpt.has_value()) {
+      LOG(E, "Sensor config must have field path");
+      return false;
+    }
+
+    drv_.setPath(pathOpt.value());
+    if (!drv_.open()) {
+      return false;
+    }
+
+    if (!drv_.setMode(SPI_MODE_0)) {
+      return false;
+    }
+    usleep(1e3);
+
+    // Init.
+    if (!checkErrorCodeResults("bmp3_init", bmp3_init(&dev_))) return false;
+
+    LOG(I, "BMP3 chip id is 0x" << std::hex << +dev_.chip_id);
+
+    // Settings.
+    settings_.int_settings.drdy_en = BMP3_ENABLE;
+    settings_.press_en = BMP3_ENABLE;
+    settings_.temp_en = BMP3_ENABLE;
+
+    // Drone settings (TODO: make configurable)
+    settings_.odr_filter.press_os = BMP3_OVERSAMPLING_8X;
+    settings_.odr_filter.temp_os = BMP3_NO_OVERSAMPLING;
+    settings_.odr_filter.iir_filter = BMP3_IIR_FILTER_COEFF_3;
+    settings_.odr_filter.odr = BMP3_ODR_50_HZ;
+
+    uint16_t settings_sel = BMP3_SEL_PRESS_EN | BMP3_SEL_TEMP_EN | BMP3_SEL_PRESS_OS |
+                            BMP3_SEL_TEMP_OS | BMP3_SEL_ODR | BMP3_SEL_DRDY_EN;
+    if (!checkErrorCodeResults("bmp3_set_sensor_settings",
+                               bmp3_set_sensor_settings(settings_sel, &settings_, &dev_)))
+      return false;
+
+    // Operation mode
+    settings_.op_mode = BMP3_MODE_NORMAL;
+    if (!checkErrorCodeResults("bmp3_set_op_mode", bmp3_set_op_mode(&settings_, &dev_)))
+      return false;
+    else
+      return true;
+  }
+
+  typename super::TupleReturnType read() override {
+    std::tuple<FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
+    if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
+      return measurement;
+
+    if (status_.intr.drdy == BMP3_ENABLE) {
+      if (!checkErrorCodeResults("bmp3_get_sensor_data",
+                                 bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
+        return measurement;
+
+      std::get<0>(measurement) = data_.pressure;
+      std::get<1>(measurement) = data_.temperature;
+
+      /* NOTE : Read status register again to clear data ready interrupt status */
+      checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
+    } else {
+      LOG(W, "Data not ready read all");
+    }
+    return measurement;
+  }
+
+  template <typename... T>
+  std::tuple<typename T::ReturnType...> read() = delete;
+
+  bool close() override { return false; }
+
+ private:
+  Temperature::ReturnType readTemperature();
+  FluidPressure::ReturnType readPressure();
+
+  bool checkErrorCodeResults(const std::string &api_name, int8_t rslt) const {
     if (rslt != BMP3_OK) {
       LOG(E, api_name.c_str() << "\t");
       if (rslt == BMP3_E_NULL_PTR) {
@@ -76,92 +154,10 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
         LOG(E, "Error [" << int(rslt) << "] : Unknown error code");
       }
     }
-  }
-
-  bool open() override {
-    std::optional<std::string> pathOpt = cfg_.get("path");
-
-    if (!pathOpt.has_value()) {
-      LOG(E, "Sensor config must have field path");
-      return false;
-    }
-
-    drv_.setPath(pathOpt.value());
-    if (!drv_.open()) {
-      return false;
-    }
-
-    if (!drv_.setMode(SPI_MODE_0)) {
-      return false;
-    }
-    usleep(1e3);
-
-    // Init.
-    auto rslt = bmp3_init(&dev_);
-    printErrorCodeResults("bmp3_init", rslt);
-    if (rslt != BMP3_OK) {
-      return false;
-    }
-    LOG(I, "BMP3 chip id is 0x" << std::hex << +dev_.chip_id);
-
-    // Settings.
-    settings_.int_settings.drdy_en = BMP3_ENABLE;
-    settings_.press_en = BMP3_ENABLE;
-    settings_.temp_en = BMP3_ENABLE;
-
-    // Drone settings (TODO: make configurable)
-    settings_.odr_filter.press_os = BMP3_OVERSAMPLING_8X;
-    settings_.odr_filter.temp_os = BMP3_NO_OVERSAMPLING;
-    settings_.odr_filter.iir_filter = BMP3_IIR_FILTER_COEFF_3;
-    settings_.odr_filter.odr = BMP3_ODR_50_HZ;
-
-    uint16_t settings_sel = BMP3_SEL_PRESS_EN | BMP3_SEL_TEMP_EN | BMP3_SEL_PRESS_OS |
-                            BMP3_SEL_TEMP_OS | BMP3_SEL_ODR | BMP3_SEL_DRDY_EN;
-    rslt = bmp3_set_sensor_settings(settings_sel, &settings_, &dev_);
-    printErrorCodeResults("bmp3_set_sensor_settings", rslt);
-    if (rslt != BMP3_OK) {
-      return false;
-    }
-
-    // Operation mode
-    settings_.op_mode = BMP3_MODE_NORMAL;
-    rslt = bmp3_set_op_mode(&settings_, &dev_);
-    printErrorCodeResults("bmp3_set_op_mode", rslt);
 
     return rslt == BMP3_OK;
   }
 
-  typename super::TupleReturnType read() override {
-    std::tuple<FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
-    auto rslt = bmp3_get_status(&status_, &dev_);
-    printErrorCodeResults("bmp3_get_status", rslt);
-    if (rslt != BMP3_OK) return measurement;
-
-    if (status_.intr.drdy == BMP3_ENABLE) {
-      rslt = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_);
-      printErrorCodeResults("bmp3_get_sensor_data", rslt);
-      if (rslt != BMP3_OK) return measurement;
-
-      std::get<0>(measurement) = data_.pressure;
-      std::get<1>(measurement) = data_.temperature;
-
-      /* NOTE : Read status register again to clear data ready interrupt status */
-      rslt = bmp3_get_status(&status_, &dev_);
-      printErrorCodeResults("bmp3_get_status", rslt);
-    } else {
-      LOG(W, "Data not ready read all");
-    }
-    return measurement;
-  }
-
-  template <typename... T>
-  std::tuple<typename T::ReturnType...> read() = delete;
-
-  bool close() override { return false; }
-
- private:
-  Temperature::ReturnType readTemperature();
-  FluidPressure::ReturnType readPressure();
   Spi drv_;
   SensorConfig cfg_;
 
@@ -185,20 +181,18 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
   Temperature::ReturnType measurement{};
-  auto rslt = bmp3_get_status(&status_, &dev_);
-  printErrorCodeResults("bmp3_get_status", rslt);
-  if (rslt != BMP3_OK) return measurement;
+  if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
+    return measurement;
 
   if (status_.intr.drdy == BMP3_ENABLE) {
-    rslt = bmp3_get_sensor_data(BMP3_TEMP, &data_, &dev_);
-    printErrorCodeResults("bmp3_get_sensor_data", rslt);
-    if (rslt != BMP3_OK) return measurement;
+    if (!checkErrorCodeResults("bmp3_get_sensor_data",
+                               bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
+      return measurement;
 
     measurement = data_.temperature;
 
     /* NOTE : Read status register again to clear data ready interrupt status */
-    rslt = bmp3_get_status(&status_, &dev_);
-    printErrorCodeResults("bmp3_get_status", rslt);
+    checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
   } else {
     LOG(W, "Data not ready readTemperature");
   }
@@ -208,20 +202,18 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
   FluidPressure::ReturnType measurement{};
-  auto rslt = bmp3_get_status(&status_, &dev_);
-  printErrorCodeResults("bmp3_get_status", rslt);
-  if (rslt != BMP3_OK) return measurement;
+  if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
+    return measurement;
 
   if (status_.intr.drdy == BMP3_ENABLE) {
-    rslt = bmp3_get_sensor_data(BMP3_PRESS, &data_, &dev_);
-    printErrorCodeResults("bmp3_get_sensor_data", rslt);
-    if (rslt != BMP3_OK) return measurement;
+    if (!checkErrorCodeResults("bmp3_get_sensor_data",
+                               bmp3_get_sensor_data(BMP3_PRESS, &data_, &dev_)))
+      return measurement;
 
     measurement = data_.pressure;
 
     /* NOTE : Read status register again to clear data ready interrupt status */
-    rslt = bmp3_get_status(&status_, &dev_);
-    printErrorCodeResults("bmp3_get_status", rslt);
+    checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
   } else {
     LOG(W, "Data not ready readPressure");
   }
