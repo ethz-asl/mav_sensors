@@ -23,6 +23,7 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
+        src/imu/adis16448.cpp
         src/barometer/bmp390.cpp
         src/radar/xwr18xx_mmw_demo.cpp
         )
