@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(mav_sensors)
+project(mav_sensors_core)
 
 add_compile_options(-std=c++17)
 

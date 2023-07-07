@@ -1,3 +1,4 @@
-[submodule "lib/BMP3-Sensor-API"]
-	path = lib/BMP3-Sensor-API
+[submodule "mav_sensors_core/lib/BMP3-Sensor-API"]
 	url = git@github.com:boschsensortec/BMP3-Sensor-API.git
+	path = mav_sensors_core/lib/BMP3-Sensor-API
+	
