@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mav_sensors_demo</name>
+  <version>0.0.0</version>
+  <description>The mav_sensors_demo package</description>
+  <maintainer email="acey@todo.todo">acey</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>lpp</depend>
+  <depend>roscpp</depend>
+  <depend>mav_sensors_core</depend>
+  <depend>mav_sensors_drivers</depend>
+</package>

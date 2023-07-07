@@ -4,10 +4,10 @@
 
 #include <log++.h>
 
-#include "../../mav_sensors_drivers/include/mav_sensors_drivers/sensor_types/FluidPressure.h"
 #include "mav_sensors_core/protocols/Spi.h"
-#include "mav_sensors_core/barometer/bmp390.h"
 #include "mav_sensors_core/sensor_config.h"
+#include "mav_sensors_drivers/barometer/bmp390.h"
+#include "mav_sensors_drivers/sensor_types/FluidPressure.h"
 
 int main(int argc, char** argv) {
   LOG_INIT(*argv);

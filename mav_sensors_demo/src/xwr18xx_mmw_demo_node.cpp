@@ -4,7 +4,7 @@
 
 #include <log++.h>
 
-#include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
+#include "mav_sensors_drivers/radar/xwr18xx_mmw_demo.h"
 #include "mav_sensors_core/sensor_config.h"
 
 int main(int argc, char** argv) {
