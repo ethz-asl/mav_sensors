@@ -176,6 +176,7 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
   void softwareReset();
 
   Spi driver_;
+  bool is_config_valid_{true};
   int burst_len_{DEFAULT_BURST_LEN};
   int crc_error_count_{0};
 

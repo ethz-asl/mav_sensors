@@ -4,7 +4,14 @@
 
 #include "mav_sensors_drivers/imu/adis16448.h"
 
-Adis16448::Adis16448(SensorConfig cfg_) : cfg_(std::move(cfg_)) {}
+Adis16448::Adis16448(SensorConfig cfg) : cfg_(std::move(cfg)) {
+  if (cfg_.get("path").has_value()) {
+    driver_ = Spi(cfg_.get("path").value());
+  } else {
+    LOG(F, "Adis16448: Field path not set in config");
+    is_config_valid_ = false;
+  }
+}
 
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
   return (((int)*(signed char *)(word.data())) * 1 << CHAR_BIT) | word[1];
@@ -33,6 +40,11 @@ void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
 }
 
 bool Adis16448::open() {
+  if (!is_config_valid_) {
+    LOG(E, "Adis16448: Config not valid.");
+    return false;
+  }
+
   if (!driver_.open()) {
     LOG(E, "open failed: " << strerror(errno));
     return false;
@@ -50,6 +62,7 @@ bool Adis16448::open() {
 
   // Selftest
   if (!selftest()) {
+    LOG(E, "Selftest failed.");
     return false;
   }
 
@@ -89,11 +102,16 @@ bool Adis16448::open() {
   if (burstCrc.has_value()) {
     if (burstCrc.value() == "true") {
       setBurstCRCEnabled(true);
+      LOG(I, "Burst CRC enabled.");
     }
     if (burstCrc.value() == "false") {
       setBurstCRCEnabled(false);
+      LOG(I, "Burst CRC disabled.");
     }
+  } else {
+    LOG(I, "Field burst_crc not set in config. Burst CRC disabled.");
   }
+
   return true;
 }
 
