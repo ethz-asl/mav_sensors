@@ -7,7 +7,7 @@
 #include <cmath>
 #include <vector>
 
-#include "mav_sensors/core/sensor.h"
+#include "mav_sensors_core/sensor.h"
 
 class Radar : public SensorType {
  public:

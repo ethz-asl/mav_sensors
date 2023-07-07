@@ -1,4 +1,4 @@
-#include "mav_sensors/core/protocols/Serial.h"
+#include "mav_sensors_core/protocols/Serial.h"
 
 #include <fcntl.h>
 

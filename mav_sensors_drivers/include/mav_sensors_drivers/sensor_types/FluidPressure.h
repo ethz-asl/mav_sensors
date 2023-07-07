@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "mav_sensors/core/sensor.h"
+#include "mav_sensors_core/sensor.h"
 
 class FluidPressure : public SensorType {
  public:

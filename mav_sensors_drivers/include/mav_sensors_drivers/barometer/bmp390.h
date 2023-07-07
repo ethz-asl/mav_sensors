@@ -17,10 +17,10 @@
 #include <linux/spi/spidev.h>
 #include <log++.h>
 
-#include "mav_sensors/core/protocols/Spi.h"
-#include "mav_sensors/core/sensor_config.h"
-#include "mav_sensors/core/sensor_types/FluidPressure.h"
-#include "mav_sensors/core/sensor_types/Temperature.h"
+#include "mav_sensors_core/protocols/Spi.h"
+#include "mav_sensors_core/sensor_config.h"
+#include "mav_sensors_drivers/sensor_types/FluidPressure.h"
+#include "mav_sensors_drivers/sensor_types/Temperature.h"
 
 template <typename HardwareProtocol>
 class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {

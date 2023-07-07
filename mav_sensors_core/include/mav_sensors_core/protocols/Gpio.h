@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "mav_sensors/core/driver.h"
+#include "mav_sensors_core/driver.h"
 
 enum class GpioDirection { IN, OUT };
 enum class GpioState { HIGH, LOW };

@@ -8,7 +8,7 @@
 
 #include <asm/termbits.h>
 
-#include "mav_sensors/core/driver.h"
+#include "mav_sensors_core/driver.h"
 
 typedef unsigned char byte;
 

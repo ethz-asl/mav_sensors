@@ -2,9 +2,9 @@
 // Created by acey on 04.07.23.
 //
 
-#include "mav_sensors/core/protocols/Gpio.h"
+#include "mav_sensors_core/protocols/Gpio.h"
 
-#include "mav_sensors/core/protocols/common/PosixFilesystem.h"
+#include "mav_sensors_core/protocols/common/PosixFilesystem.h"
 
 Gpio::Gpio(int gpio_nr, const std::string& name, GpioDirection direction)
     : direction_(direction), gpio_nr_(gpio_nr),

@@ -2,7 +2,7 @@
 // Created by acey on 27.06.23.
 //
 
-#include "mav_sensors/core/sensor_config.h"
+#include "mav_sensors_core/sensor_config.h"
 
 SensorConfig::SensorConfig() = default;
 

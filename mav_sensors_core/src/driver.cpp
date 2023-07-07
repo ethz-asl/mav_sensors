@@ -2,7 +2,7 @@
 // Created by acey on 27.06.23.
 //
 
-#include "mav_sensors/core/driver.h"
+#include "mav_sensors_core/driver.h"
 
 #include <utility>
 

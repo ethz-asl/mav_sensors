@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp lpp)
 
 catkin_package(
         INCLUDE_DIRS include
-        LIBRARIES mav_sensors
+        LIBRARIES mav_sensors_core
         CATKIN_DEPENDS roscpp lpp
 )
 
@@ -22,35 +22,26 @@ include_directories(
 add_compile_definitions(MODE_ROSLOG)
 
 add_library(${PROJECT_NAME}
-        src/core/sensor_config.cpp
-        src/core/sensor.cpp
-        src/core/driver.cpp
+        src/sensor_config.cpp
+        src/sensor.cpp
+        src/driver.cpp
 
-        src/core/protocols/common/PosixFilesystem.cpp
-        src/core/protocols/Serial.cpp
-        src/core/protocols/Spi.cpp
-        src/core/protocols/Gpio.cpp
+        src/protocols/common/PosixFilesystem.cpp
+        src/protocols/Serial.cpp
+        src/protocols/Spi.cpp
+        src/protocols/Gpio.cpp
 
-        src/core/sensor_types/FluidPressure.cpp
-
-        src/impl/barometer/bmp390.cpp
-        src/impl/radar/xwr18xx_mmw_demo.cpp
+        src/sensor_types/FluidPressure.cpp
         )
-
-# Bosch BMP3 API
-add_library(${PROJECT_NAME}_BMP3 lib/BMP3-Sensor-API/bmp3.c)
-target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_BMP3)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(${PROJECT_NAME}_node src/main.cpp)
+#add_executable(${PROJECT_NAME}_node src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME}_node
-        ${PROJECT_NAME}
-        )
+#target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
-add_executable(xwr18xx_mmw_demo src/nodes/xwr18xx_mmw_demo_node.cpp)
-target_link_libraries(xwr18xx_mmw_demo ${PROJECT_NAME})
+#add_executable(xwr18xx_mmw_demo src/nodes/xwr18xx_mmw_demo_node.cpp)
+#target_link_libraries(xwr18xx_mmw_demo ${PROJECT_NAME})
 
 #############
 ## Install ##
@@ -74,18 +65,17 @@ target_link_libraries(xwr18xx_mmw_demo ${PROJECT_NAME})
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+ install(TARGETS ${PROJECT_NAME}
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+ install(DIRECTORY include/${PROJECT_NAME}/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.h"
+   PATTERN ".svn" EXCLUDE
+ )
 
 #############
 ## Testing ##

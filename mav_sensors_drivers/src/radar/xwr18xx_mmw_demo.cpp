@@ -2,13 +2,12 @@
 // Created by brik on 01.07.2023
 //
 
-#include "mav_sensors/impl/radar/xwr18xx_mmw_demo.h"
+#include "mav_sensors_drivers/radar/xwr18xx_mmw_demo.h"
 
+#include <cstring>
 #include <fstream>
 
-#include <sys/ioctl.h>
-
-#include "mav_sensors/core/sensor_types/Radar.h"
+#include "mav_sensors_drivers/sensor_types/Radar.h"
 
 template <>
 Xwr18XxMmwDemo::MmwDemoOutputMessageType Xwr18XxMmwDemo::parse(const std::vector<byte>& data,

@@ -2,7 +2,7 @@
 // Created by acey on 22.08.22.
 //
 
-#include "mav_sensors/core/protocols/Spi.h"
+#include "mav_sensors_core/protocols/Spi.h"
 
 #include <fcntl.h>
 #include <unistd.h>

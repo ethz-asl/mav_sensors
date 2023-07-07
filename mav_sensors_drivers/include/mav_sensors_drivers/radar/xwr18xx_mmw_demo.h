@@ -5,11 +5,12 @@
 #pragma once
 
 #include <log++.h>
+#include <mav_sensors_core/protocols/Gpio.h>
+#include <mav_sensors_core/protocols/Serial.h>
+#include <mav_sensors_core/sensor.h>
+#include <mav_sensors_core/sensor_config.h>
 
-#include "mav_sensors/core/protocols/Gpio.h"
-#include "mav_sensors/core/protocols/Serial.h"
-#include "mav_sensors/core/sensor.h"
-#include "mav_sensors/core/sensor_types/Radar.h"
+#include "mav_sensors_drivers/sensor_types/Radar.h"
 
 class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
  public:

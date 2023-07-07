@@ -2,7 +2,7 @@
 // Created by acey on 24.02.22.
 //
 
-#include "mav_sensors/core/protocols/common/PosixFilesystem.h"
+#include "mav_sensors_core/protocols/common/PosixFilesystem.h"
 
 #include "sys/stat.h"
 #include <fcntl.h>
