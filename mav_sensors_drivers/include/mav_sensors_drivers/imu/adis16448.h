@@ -34,14 +34,9 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
  public:
   /**
    * Adis16448 Constructor
-   * @param path to spidev, e.g., "/dev/spidev0.1".
+   * @param SensorConfig
    */
   explicit Adis16448(SensorConfig cfg_);
-
-  /**
-   * Adis16448 Destructor
-   */
-  ~Adis16448();
 
   bool open() override;
 
@@ -95,7 +90,6 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
 
   /*!
   *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
-
   *  @return void.
   */
   void printImuConfig();
@@ -106,12 +100,18 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
    */
   bool close() final;
 
+  /**
+   * Adis16448 Destructor
+   */
+  ~Adis16448();
+
+  //! Conversion functions
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
   static bool validateCrc(const std::vector<byte> &burstData);
 
  private:
-  static unsigned short int runCRC(const uint16_t burstData[]);
+  static unsigned short int runCrc(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
   bool selftest();

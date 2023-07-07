@@ -147,12 +147,12 @@ bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
     count++;
   }
 
-  unsigned short int actual_crc = runCRC(sampleAsWord);
+  unsigned short int actual_crc = runCrc(sampleAsWord);
 
   return actual_crc == expected_crc;
 }
 
-unsigned short int Adis16448::runCRC(const uint16_t *burstData) {
+unsigned short int Adis16448::runCrc(const uint16_t *burstData) {
   unsigned char i;         // Tracks each burstData word
   unsigned char ii;        // Counter for each bit of the current burstData word
   unsigned int data;       // Holds the lower/Upper byte for CRC computation
