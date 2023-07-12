@@ -36,13 +36,6 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-#add_executable(${PROJECT_NAME}_node src/main.cpp)
-
-#target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
-
-#add_executable(xwr18xx_mmw_demo src/nodes/xwr18xx_mmw_demo_node.cpp)
-#target_link_libraries(xwr18xx_mmw_demo ${PROJECT_NAME})
-
 #############
 ## Install ##
 #############
