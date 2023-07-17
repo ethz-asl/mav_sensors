@@ -6,8 +6,8 @@ add_compile_options(-std=c++17)
 find_package(catkin REQUIRED roscpp lpp mav_sensors_core)
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES mav_sensors_drivers
+  INCLUDE_DIRS include lib/BMP3-Sensor-API
+  LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_BMP3 ${PROJECT_NAME}_BMI08x
   CATKIN_DEPENDS roscpp lpp mav_sensors_core
 )
 
@@ -18,7 +18,9 @@ add_compile_definitions(MODE_LPP)
 ###########
 
 include_directories(
- include lib/BMP3-Sensor-API lib/BMI08x-Sensor-API
+ include 
+ lib/BMP3-Sensor-API
+ lib/BMI08x-Sensor-API
  ${catkin_INCLUDE_DIRS}
 )
 
