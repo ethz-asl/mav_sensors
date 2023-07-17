@@ -9,7 +9,7 @@
 #include "mav_sensors_drivers/barometer/bmp390.h"
 #include "mav_sensors_drivers/sensor_types/FluidPressure.h"
 
-int main(int argc, char** argv{
+int main(int argc, char** argv) {
   LOG_INIT(*argv);
   SensorConfig sensorConfig;
   sensorConfig.set("path", "/dev/spidev2.0");
