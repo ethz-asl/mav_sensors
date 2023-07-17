@@ -21,11 +21,12 @@
 #include "mav_sensors_core/sensor_config.h"
 #include "mav_sensors_drivers/sensor_types/FluidPressure.h"
 #include "mav_sensors_drivers/sensor_types/Temperature.h"
+#include "mav_sensors_drivers/sensor_types/Time.h"
 
 template <typename HardwareProtocol>
-class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
+class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature> {
  public:
-  typedef Sensor<HardwareProtocol, FluidPressure, Temperature> super;
+  typedef Sensor<HardwareProtocol, Time, FluidPressure, Temperature> super;
 
   static_assert(std::is_same_v<HardwareProtocol, Spi>, "This sensor supports Spi only.");
 
@@ -102,7 +103,9 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
   }
 
   typename super::TupleReturnType read() override {
-    std::tuple<FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
+    std::tuple<Time::ReturnType, FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
+    auto now = std::chrono::system_clock::now();
+
     if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
       return measurement;
 
@@ -111,8 +114,10 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature> {
                                  bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
         return measurement;
 
-      std::get<0>(measurement) = data_.pressure;
-      std::get<1>(measurement) = data_.temperature;
+      std::get<0>(measurement) =
+          std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+      std::get<1>(measurement) = data_.pressure;
+      std::get<2>(measurement) = data_.temperature;
 
       /* NOTE : Read status register again to clear data ready interrupt status */
       checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
@@ -222,14 +227,20 @@ FluidPressure::ReturnType BMP390<Spi>::readPressure() {
 
 template <>
 template <>
-std::tuple<Temperature::ReturnType> BMP390<Spi>::read<Temperature>() {
-  return {readTemperature()};
+std::tuple<Time::ReturnType, Temperature::ReturnType> BMP390<Spi>::read<Time, Temperature>() {
+  return {std::chrono::duration_cast<std::chrono::nanoseconds>(
+              std::chrono::system_clock::now().time_since_epoch())
+              .count(),
+          readTemperature()};
 }
 
 template <>
 template <>
-std::tuple<FluidPressure::ReturnType> BMP390<Spi>::read<FluidPressure>() {
-  return {readPressure()};
+std::tuple<Time::ReturnType, FluidPressure::ReturnType> BMP390<Spi>::read<Time, FluidPressure>() {
+  return {std::chrono::duration_cast<std::chrono::nanoseconds>(
+              std::chrono::system_clock::now().time_since_epoch())
+              .count(),
+          readPressure()};
 }
 
 template <>
