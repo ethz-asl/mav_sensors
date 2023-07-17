@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 5; i++) {
     auto measurements = bmi088.read();
 
     LOG(I, std::get<0>(measurements).has_value(),
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
         "Angular Velocity: " << std::get<2>(measurements).value().x << " rad/s, "
                              << std::get<2>(measurements).value().y << " rad/s, "
                              << std::get<2>(measurements).value().z << " rad/s");
-    sleep(0.1);
+    sleep(1.0);
   }
   bmi088.close();
 }
