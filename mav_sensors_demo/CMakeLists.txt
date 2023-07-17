@@ -27,11 +27,7 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_xwr18xx_mmw_demo src/xwr18xx_mmw_demo_node.cpp)
+target_link_libraries(${PROJECT_NAME}_xwr18xx_mmw_demo ${catkin_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_xwr18xx_mmw_demo
-        ${catkin_LIBRARIES}
-        )
-
-# add_executable(${PROJECT_NAME}_node src/bmp390_demo.cpp)
-
-# target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+add_executable(${PROJECT_NAME}_bmp390_demo src/bmp390_demo.cpp)
+target_link_libraries(${PROJECT_NAME}_bmp390_demo ${catkin_LIBRARIES})
