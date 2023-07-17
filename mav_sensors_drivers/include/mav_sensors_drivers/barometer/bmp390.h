@@ -55,14 +55,14 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
   static void usSleep(uint32_t period, [[maybe_unused]] void *intf_ptr) { usleep(period); }
 
   bool open() override {
-    std::optional<std::string> pathOpt = cfg_.get("path");
+    std::optional<std::string> path = cfg_.get("path");
 
-    if (!pathOpt.has_value()) {
+    if (!path.has_value()) {
       LOG(E, "Sensor config must have field path");
       return false;
     }
 
-    drv_.setPath(pathOpt.value());
+    drv_.setPath(path.value());
     if (!drv_.open()) {
       return false;
     }

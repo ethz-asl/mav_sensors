@@ -287,11 +287,26 @@ bool Bmi088<HardwareProtocol>::close() {
 template <>
 bool Bmi088<Spi>::open() {
   // Create SPI drivers.
+  std::optional<std::string> path_acc = cfg_.get("path_acc");
+  std::optional<std::string> path_gyro = cfg_.get("path_gyro");
+
+  if (!path_acc.has_value()) {
+    LOG(E, "Sensor config must have field path_acl");
+    return false;
+  }
+
+  if (!path_gyro.has_value()) {
+    LOG(E, "Sensor config must have field path_gyro");
+    return false;
+  }
+
+  acc_spi_driver_.setPath(path_acc.value());
   if (!acc_spi_driver_.open()) {
     LOG(E, "Accelerometer open failed: " << strerror(errno));
     return false;
   }
 
+  gyro_spi_driver_.setPath(path_gyro.value());
   if (!gyro_spi_driver_.open()) {
     LOG(E, "Gyroscope open failed: " << strerror(errno));
     return false;
