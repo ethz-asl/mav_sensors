@@ -19,12 +19,13 @@
 #include "mav_sensors_core/protocols/Spi.h"
 #include "mav_sensors_drivers/sensor_types/Accelerometer.h"
 #include "mav_sensors_drivers/sensor_types/Gyroscope.h"
+#include "mav_sensors_drivers/sensor_types/Time.h"
 
 template <typename HardwareProtocol>
-class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope> {
+class Bmi088 : public Sensor<HardwareProtocol, Time, Accelerometer, Gyroscope> {
   static_assert(std::is_same<HardwareProtocol, Spi>::value,
                 "Bmi088 only supports SPI at the moment.");
-  typedef Sensor<HardwareProtocol, Accelerometer, Gyroscope> super;
+  typedef Sensor<HardwareProtocol, Time, Accelerometer, Gyroscope> super;
 
  public:
   /**
@@ -366,8 +367,10 @@ bool Bmi088<Spi>::open() {
 }
 
 template <>
-typename Sensor<Spi, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi>::read() {
+typename Sensor<Spi, Time, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi>::read() {
+  std::tuple<Time::ReturnType, Accelerometer::ReturnType, Gyroscope::ReturnType> measurement{};
   bmi08_sensor_data acc{}, gyro{};
+  auto now = std::chrono::system_clock::now();
 
   // TODO(rikba): This is not really burst but rather returning one after the other. Implement
   // actual burst.
@@ -376,7 +379,7 @@ typename Sensor<Spi, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi>::rea
   printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
 
   if (rslt != BMI08_OK) {
-    return {std::nullopt, std::nullopt};
+    return measurement;
   }
   vec3<double> acceleration = {lsbToMps2(acc.x, dev_.accel_cfg.range),
                                lsbToMps2(acc.y, dev_.accel_cfg.range),
@@ -385,7 +388,9 @@ typename Sensor<Spi, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi>::rea
                             lsbToRps(gyro.y, dev_.gyro_cfg.range),
                             lsbToRps(gyro.z, dev_.gyro_cfg.range)};
 
-  return std::make_tuple(acceleration, gyroscope);
+  return std::make_tuple(
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count(),
+      acceleration, gyroscope);
 }
 
 template <>
