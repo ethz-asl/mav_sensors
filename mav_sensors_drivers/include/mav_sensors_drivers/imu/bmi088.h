@@ -390,22 +390,31 @@ typename Sensor<Spi, Time, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi
   // TODO(rikba): This is not really burst but rather returning one after the other. Implement
   // actual burst.
   // TODO(rikba): Temperature
-  auto rslt = bmi08a_get_synchronized_data(&acc, &gyro, &dev_);
-  printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
-
+  uint8_t drdy_acc = 0;
+  auto rslt = bmi08a_get_status(&drdy_acc, &dev_);
+  printErrorCodeResults("bmi08a_get_status", rslt);
   if (rslt != BMI08_OK) {
     return measurement;
   }
-  vec3<double> acceleration = {lsbToMps2(acc.x, dev_.accel_cfg.range),
-                               lsbToMps2(acc.y, dev_.accel_cfg.range),
-                               lsbToMps2(acc.z, dev_.accel_cfg.range)};
-  vec3<double> gyroscope = {lsbToRps(gyro.x, dev_.gyro_cfg.range),
-                            lsbToRps(gyro.y, dev_.gyro_cfg.range),
-                            lsbToRps(gyro.z, dev_.gyro_cfg.range)};
+  if (drdy_acc) {
+    rslt = bmi08a_get_synchronized_data(&acc, &gyro, &dev_);
+    printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
 
-  return std::make_tuple(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count(),
-      acceleration, gyroscope);
+    if (rslt != BMI08_OK) {
+      return measurement;
+    }
+    std::get<0>(measurement) =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+    std::get<1>(measurement) = {lsbToMps2(acc.x, dev_.accel_cfg.range),
+                                lsbToMps2(acc.y, dev_.accel_cfg.range),
+                                lsbToMps2(acc.z, dev_.accel_cfg.range)};
+    std::get<2>(measurement) = {lsbToRps(gyro.x, dev_.gyro_cfg.range),
+                                lsbToRps(gyro.y, dev_.gyro_cfg.range),
+                                lsbToRps(gyro.z, dev_.gyro_cfg.range)};
+  } else {
+    LOG(W, "No IMU data ready");
+  }
+  return measurement;
 }
 
 template <>
