@@ -4,27 +4,27 @@
 
 #include <log++.h>
 
-#include "mav_sensors_drivers/radar/xwr18xx_mmw_demo.h"
 #include "mav_sensors_core/sensor_config.h"
+#include "mav_sensors_drivers/radar/xwr18xx_mmw_demo.h"
 
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
-  SensorConfig sensorConfig;
+  SensorConfig cfg;
   std::string current_file_path = __FILE__;
   size_t src_idx = current_file_path.rfind(std::string("/src/"));
   if (src_idx != std::string::npos) {
     auto pkg_directory = current_file_path.substr(0, src_idx);
-    sensorConfig.set("path_cfg_file",
-                     pkg_directory + "/cfg/radar/xwr18xx_AOP_profile_best_velocity_resolution.cfg");
+    cfg.set("path_cfg_file",
+            pkg_directory + "/cfg/radar/xwr18xx_AOP_profile_best_velocity_resolution.cfg");
   }
-  sensorConfig.set("path_cfg", "/dev/ttyUSB0");
-  sensorConfig.set("path_data", "/dev/ttyUSB1");
-  sensorConfig.set("trigger", "true");
-  sensorConfig.set("trigger_delay", "500"); //in ns
-  sensorConfig.set("trigger_gpio", "443");
-  sensorConfig.set("trigger_gpio_name", "PR.00");
+  cfg.set("path_cfg", "/dev/ttyUSB0");
+  cfg.set("path_data", "/dev/ttyUSB1");
+  cfg.set("trigger", "true");
+  cfg.set("trigger_delay", "500");  // in ns
+  cfg.set("trigger_gpio", "443");
+  cfg.set("trigger_gpio_name", "PR.00");
 
-  Xwr18XxMmwDemo radar(sensorConfig);
+  Xwr18XxMmwDemo radar(cfg);
   if (!radar.open()) {
     LOG(F, "Open failed.");
     return 1;

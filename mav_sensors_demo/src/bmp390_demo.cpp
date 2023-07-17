@@ -11,10 +11,10 @@
 
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
-  SensorConfig sensorConfig;
-  sensorConfig.set("path", "/dev/spidev2.0");
+  SensorConfig cfg;
+  cfg.set("path", "/dev/spidev2.0");
 
-  BMP390<Spi> bmp390(sensorConfig);
+  BMP390<Spi> bmp390(cfg);
   if (!bmp390.open()) {
     LOG(F, "Open failed");
     return 1;
