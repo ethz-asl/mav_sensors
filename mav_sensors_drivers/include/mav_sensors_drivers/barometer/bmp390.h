@@ -103,6 +103,7 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
   }
 
   typename super::TupleReturnType read() override {
+    bmp3_data data{std::nan("1"), std::nan("1")};
     std::tuple<Time::ReturnType, FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
     auto now = std::chrono::system_clock::now();
 
@@ -111,13 +112,13 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
 
     if (status_.intr.drdy == BMP3_ENABLE) {
       if (!checkErrorCodeResults("bmp3_get_sensor_data",
-                                 bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
+                                 bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, &dev_)))
         return measurement;
 
       std::get<0>(measurement) =
           std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-      std::get<1>(measurement) = data_.pressure;
-      std::get<2>(measurement) = data_.temperature;
+      std::get<1>(measurement) = data.pressure;
+      std::get<2>(measurement) = data.temperature;
 
       /* NOTE : Read status register again to clear data ready interrupt status */
       checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
@@ -177,7 +178,6 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
                 .write = &(BMP390::writeReg),
                 .delay_us = &(BMP390::usSleep)};
   bmp3_settings settings_{0};
-  bmp3_data data_ = {0};
   bmp3_status status_ = {{0}};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
@@ -185,16 +185,17 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
+  bmp3_data data{std::nan("1"), std::nan("1")};
   Temperature::ReturnType measurement{};
   if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
     return measurement;
 
   if (status_.intr.drdy == BMP3_ENABLE) {
     if (!checkErrorCodeResults("bmp3_get_sensor_data",
-                               bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
+                               bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, &dev_)))
       return measurement;
 
-    measurement = data_.temperature;
+    measurement = data.temperature;
 
     /* NOTE : Read status register again to clear data ready interrupt status */
     checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
@@ -206,16 +207,17 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
 
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
+  bmp3_data data{std::nan("1"), std::nan("1")};
   FluidPressure::ReturnType measurement{};
   if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
     return measurement;
 
   if (status_.intr.drdy == BMP3_ENABLE) {
     if (!checkErrorCodeResults("bmp3_get_sensor_data",
-                               bmp3_get_sensor_data(BMP3_PRESS, &data_, &dev_)))
+                               bmp3_get_sensor_data(BMP3_PRESS, &data, &dev_)))
       return measurement;
 
-    measurement = data_.pressure;
+    measurement = data.pressure;
 
     /* NOTE : Read status register again to clear data ready interrupt status */
     checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
