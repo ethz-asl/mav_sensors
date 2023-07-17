@@ -336,7 +336,7 @@ bool Bmi088<Spi>::open() {
   // Re-configure data acquisition and filtering.
   // TODO(rikba): Expose sync_cfg setting to user.
   bmi08_data_sync_cfg sync_cfg{.mode = BMI08_ACCEL_DATA_SYNC_MODE_400HZ};
-  auto rslt = bmi08a_configure_data_synchronization(sync_cfg, &dev_);
+  auto rslt = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 
