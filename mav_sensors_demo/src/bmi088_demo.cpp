@@ -25,17 +25,16 @@ int main(int argc, char** argv) {
 
   for (int i = 0; i < 100; i++) {
     auto measurements = bmi088.read();
-
     LOG(I, std::get<0>(measurements).has_value(),
-        "Time: " << std::get<0>(measurements).value() << " s");
+        "Acceleration: " << std::get<0>(measurements).value().x << " m/s^2, "
+                         << std::get<0>(measurements).value().y << " m/s^2, "
+                         << std::get<0>(measurements).value().z << " m/s^2");
     LOG(I, std::get<1>(measurements).has_value(),
-        "Acceleration: " << std::get<1>(measurements).value().x << " m/s^2, "
-                         << std::get<1>(measurements).value().y << " m/s^2, "
-                         << std::get<1>(measurements).value().z << " m/s^2");
+        "Angular Velocity: " << std::get<1>(measurements).value().x << " rad/s, "
+                             << std::get<1>(measurements).value().y << " rad/s, "
+                             << std::get<1>(measurements).value().z << " rad/s");
     LOG(I, std::get<2>(measurements).has_value(),
-        "Angular Velocity: " << std::get<2>(measurements).value().x << " rad/s, "
-                             << std::get<2>(measurements).value().y << " rad/s, "
-                             << std::get<2>(measurements).value().z << " rad/s");
+        "Time: " << std::get<2>(measurements).value() << " s");
   }
   bmi088.close();
 }

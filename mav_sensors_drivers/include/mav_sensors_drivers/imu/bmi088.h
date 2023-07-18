@@ -22,10 +22,10 @@
 #include "mav_sensors_drivers/sensor_types/Time.h"
 
 template <typename HardwareProtocol>
-class Bmi088 : public Sensor<HardwareProtocol, Time, Accelerometer, Gyroscope> {
+class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> {
   static_assert(std::is_same<HardwareProtocol, Spi>::value,
                 "Bmi088 only supports SPI at the moment.");
-  typedef Sensor<HardwareProtocol, Time, Accelerometer, Gyroscope> super;
+  typedef Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> super;
 
  public:
   /**
@@ -382,8 +382,8 @@ bool Bmi088<Spi>::open() {
 }
 
 template <>
-typename Sensor<Spi, Time, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi>::read() {
-  std::tuple<Time::ReturnType, Accelerometer::ReturnType, Gyroscope::ReturnType> measurement{};
+typename Sensor<Spi, Accelerometer, Gyroscope, Time>::TupleReturnType Bmi088<Spi>::read() {
+  std::tuple<Accelerometer::ReturnType, Gyroscope::ReturnType, Time::ReturnType> measurement{};
   bmi08_sensor_data acc{}, gyro{};
   auto now = std::chrono::system_clock::now();
 
@@ -403,14 +403,14 @@ typename Sensor<Spi, Time, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi
     if (rslt != BMI08_OK) {
       return measurement;
     }
-    std::get<0>(measurement) =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-    std::get<1>(measurement) = {lsbToMps2(acc.x, dev_.accel_cfg.range),
+    std::get<0>(measurement) = {lsbToMps2(acc.x, dev_.accel_cfg.range),
                                 lsbToMps2(acc.y, dev_.accel_cfg.range),
                                 lsbToMps2(acc.z, dev_.accel_cfg.range)};
-    std::get<2>(measurement) = {lsbToRps(gyro.x, dev_.gyro_cfg.range),
+    std::get<1>(measurement) = {lsbToRps(gyro.x, dev_.gyro_cfg.range),
                                 lsbToRps(gyro.y, dev_.gyro_cfg.range),
                                 lsbToRps(gyro.z, dev_.gyro_cfg.range)};
+    std::get<2>(measurement) =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
   } else {
     LOG(W, "No IMU data ready");
   }
