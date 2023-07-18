@@ -22,21 +22,20 @@ int main(int argc, char** argv) {
 
   for (int i = 0; i < 5; i++) {
     auto measurements = bmp390.read();
-
     LOG(I, std::get<0>(measurements).has_value(),
-        "Time: " << std::get<0>(measurements).value() << " s");
+        "Pressure: " << std::get<0>(measurements).value() << " Pa");
     LOG(I, std::get<1>(measurements).has_value(),
-        "Pressure: " << std::get<1>(measurements).value() << " Pa");
+        "Temperature: " << std::get<1>(measurements).value() << " C");
     LOG(I, std::get<2>(measurements).has_value(),
-        "Temperature: " << std::get<2>(measurements).value() << " C");
-    auto m_t = bmp390.read<Time, Temperature>();
+        "Time: " << std::get<2>(measurements).value() << " s");
+    auto m_t = bmp390.read<Temperature, Time>();
     LOG(I, std::get<0>(m_t).has_value() && std::get<1>(m_t).has_value(),
-        "Temperature (single measurement): " << std::get<1>(m_t).value()
-                                             << " C at t=" << std::get<0>(m_t).value() << " s");
-    auto m_p = bmp390.read<Time, FluidPressure>();
+        "Temperature (single measurement): " << std::get<0>(m_t).value()
+                                             << " C at t=" << std::get<1>(m_t).value() << " s");
+    auto m_p = bmp390.read<FluidPressure, Time>();
     LOG(I, std::get<0>(m_p).has_value() && std::get<1>(m_p).has_value(),
-        "Pressure (single measurement): " << std::get<1>(m_p).value()
-                                          << " Pa at t=" << std::get<0>(m_p).value() << " s");
+        "Pressure (single measurement): " << std::get<0>(m_p).value()
+                                          << " Pa at t=" << std::get<1>(m_p).value() << " s");
     sleep(1);
   }
   bmp390.close();
