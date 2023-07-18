@@ -412,7 +412,7 @@ typename Sensor<Spi, Accelerometer, Gyroscope, Time>::TupleReturnType Bmi088<Spi
     std::get<2>(measurement) =
         std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
   } else {
-    LOG(W, "No IMU data ready");
+    LOG(D, "No IMU data ready");
   }
   return measurement;
 }
