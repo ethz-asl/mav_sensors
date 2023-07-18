@@ -291,7 +291,7 @@ bool Bmi088<Spi>::open() {
   std::optional<std::string> path_gyro = cfg_.get("path_gyro");
 
   if (!path_acc.has_value()) {
-    LOG(E, "Sensor config must have field path_acl");
+    LOG(E, "Sensor config must have field path_acc");
     return false;
   }
 
