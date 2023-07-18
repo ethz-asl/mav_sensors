@@ -35,7 +35,7 @@ BMI088 is a 6-axis IMU sensor from Bosch Sensortec. It has a triaxial gyroscope 
 | Field     | Value                         | Example        | Required |
 |-----------|-------------------------------|----------------|----------|
 | path_gyro | Spi gyro device path          | /dev/spidev0.1 | Yes      |
-| path_acl  | Spi accelerometer device path | /dev/spidev0.0 | Yes      |
+| path_acc  | Spi accelerometer device path | /dev/spidev0.0 | Yes      |
 
 
 ## BMP390

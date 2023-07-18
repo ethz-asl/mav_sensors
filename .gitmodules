@@ -3,4 +3,4 @@
 	path = mav_sensors_drivers/lib/BMP3-Sensor-API
 [submodule "mav_sensors_drivers/lib/BMI08x-Sensor-API"]
 	path = mav_sensors_drivers/lib/BMI08x-Sensor-API
-	url = git@github.com:boschsensortec/BMI08x-Sensor-API.git
+	url = git@github.com:rikba/BMI08x-Sensor-API.git

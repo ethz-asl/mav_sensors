@@ -24,9 +24,9 @@
 #include "mav_sensors_drivers/sensor_types/Time.h"
 
 template <typename HardwareProtocol>
-class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature> {
+class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time> {
  public:
-  typedef Sensor<HardwareProtocol, Time, FluidPressure, Temperature> super;
+  typedef Sensor<HardwareProtocol, FluidPressure, Temperature, Time> super;
 
   static_assert(std::is_same_v<HardwareProtocol, Spi>, "This sensor supports Spi only.");
 
@@ -55,14 +55,14 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
   static void usSleep(uint32_t period, [[maybe_unused]] void *intf_ptr) { usleep(period); }
 
   bool open() override {
-    std::optional<std::string> pathOpt = cfg_.get("path");
+    std::optional<std::string> path = cfg_.get("path");
 
-    if (!pathOpt.has_value()) {
+    if (!path.has_value()) {
       LOG(E, "Sensor config must have field path");
       return false;
     }
 
-    drv_.setPath(pathOpt.value());
+    drv_.setPath(path.value());
     if (!drv_.open()) {
       return false;
     }
@@ -103,7 +103,8 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
   }
 
   typename super::TupleReturnType read() override {
-    std::tuple<Time::ReturnType, FluidPressure::ReturnType, Temperature::ReturnType> measurement{};
+    bmp3_data data{std::nan("1"), std::nan("1")};
+    std::tuple<FluidPressure::ReturnType, Temperature::ReturnType, Time::ReturnType> measurement{};
     auto now = std::chrono::system_clock::now();
 
     if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
@@ -111,13 +112,13 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
 
     if (status_.intr.drdy == BMP3_ENABLE) {
       if (!checkErrorCodeResults("bmp3_get_sensor_data",
-                                 bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
+                                 bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, &dev_)))
         return measurement;
 
-      std::get<0>(measurement) =
+      std::get<0>(measurement) = data.pressure;
+      std::get<1>(measurement) = data.temperature;
+      std::get<2>(measurement) =
           std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-      std::get<1>(measurement) = data_.pressure;
-      std::get<2>(measurement) = data_.temperature;
 
       /* NOTE : Read status register again to clear data ready interrupt status */
       checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
@@ -177,7 +178,6 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
                 .write = &(BMP390::writeReg),
                 .delay_us = &(BMP390::usSleep)};
   bmp3_settings settings_{0};
-  bmp3_data data_ = {0};
   bmp3_status status_ = {{0}};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
@@ -185,16 +185,17 @@ class BMP390 : public Sensor<HardwareProtocol, Time, FluidPressure, Temperature>
 
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
+  bmp3_data data{std::nan("1"), std::nan("1")};
   Temperature::ReturnType measurement{};
   if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
     return measurement;
 
   if (status_.intr.drdy == BMP3_ENABLE) {
     if (!checkErrorCodeResults("bmp3_get_sensor_data",
-                               bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data_, &dev_)))
+                               bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, &dev_)))
       return measurement;
 
-    measurement = data_.temperature;
+    measurement = data.temperature;
 
     /* NOTE : Read status register again to clear data ready interrupt status */
     checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
@@ -206,16 +207,17 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
 
 template <>
 FluidPressure::ReturnType BMP390<Spi>::readPressure() {
+  bmp3_data data{std::nan("1"), std::nan("1")};
   FluidPressure::ReturnType measurement{};
   if (!checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_)))
     return measurement;
 
   if (status_.intr.drdy == BMP3_ENABLE) {
     if (!checkErrorCodeResults("bmp3_get_sensor_data",
-                               bmp3_get_sensor_data(BMP3_PRESS, &data_, &dev_)))
+                               bmp3_get_sensor_data(BMP3_PRESS, &data, &dev_)))
       return measurement;
 
-    measurement = data_.pressure;
+    measurement = data.pressure;
 
     /* NOTE : Read status register again to clear data ready interrupt status */
     checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
@@ -227,20 +229,18 @@ FluidPressure::ReturnType BMP390<Spi>::readPressure() {
 
 template <>
 template <>
-std::tuple<Time::ReturnType, Temperature::ReturnType> BMP390<Spi>::read<Time, Temperature>() {
-  return {std::chrono::duration_cast<std::chrono::nanoseconds>(
-              std::chrono::system_clock::now().time_since_epoch())
-              .count(),
-          readTemperature()};
+std::tuple<Temperature::ReturnType, Time::ReturnType> BMP390<Spi>::read<Temperature, Time>() {
+  return {readTemperature(), std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                 std::chrono::system_clock::now().time_since_epoch())
+                                 .count()};
 }
 
 template <>
 template <>
-std::tuple<Time::ReturnType, FluidPressure::ReturnType> BMP390<Spi>::read<Time, FluidPressure>() {
-  return {std::chrono::duration_cast<std::chrono::nanoseconds>(
-              std::chrono::system_clock::now().time_since_epoch())
-              .count(),
-          readPressure()};
+std::tuple<FluidPressure::ReturnType, Time::ReturnType> BMP390<Spi>::read<FluidPressure, Time>() {
+  return {readPressure(), std::chrono::duration_cast<std::chrono::nanoseconds>(
+                              std::chrono::system_clock::now().time_since_epoch())
+                              .count()};
 }
 
 template <>

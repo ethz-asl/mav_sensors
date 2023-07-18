@@ -19,12 +19,13 @@
 #include "mav_sensors_core/protocols/Spi.h"
 #include "mav_sensors_drivers/sensor_types/Accelerometer.h"
 #include "mav_sensors_drivers/sensor_types/Gyroscope.h"
+#include "mav_sensors_drivers/sensor_types/Time.h"
 
 template <typename HardwareProtocol>
-class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope> {
+class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> {
   static_assert(std::is_same<HardwareProtocol, Spi>::value,
                 "Bmi088 only supports SPI at the moment.");
-  typedef Sensor<HardwareProtocol, Accelerometer, Gyroscope> super;
+  typedef Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> super;
 
  public:
   /**
@@ -286,11 +287,26 @@ bool Bmi088<HardwareProtocol>::close() {
 template <>
 bool Bmi088<Spi>::open() {
   // Create SPI drivers.
+  std::optional<std::string> path_acc = cfg_.get("path_acc");
+  std::optional<std::string> path_gyro = cfg_.get("path_gyro");
+
+  if (!path_acc.has_value()) {
+    LOG(E, "Sensor config must have field path_acc");
+    return false;
+  }
+
+  if (!path_gyro.has_value()) {
+    LOG(E, "Sensor config must have field path_gyro");
+    return false;
+  }
+
+  acc_spi_driver_.setPath(path_acc.value());
   if (!acc_spi_driver_.open()) {
     LOG(E, "Accelerometer open failed: " << strerror(errno));
     return false;
   }
 
+  gyro_spi_driver_.setPath(path_gyro.value());
   if (!gyro_spi_driver_.open()) {
     LOG(E, "Gyroscope open failed: " << strerror(errno));
     return false;
@@ -320,7 +336,7 @@ bool Bmi088<Spi>::open() {
   // Re-configure data acquisition and filtering.
   // TODO(rikba): Expose sync_cfg setting to user.
   bmi08_data_sync_cfg sync_cfg{.mode = BMI08_ACCEL_DATA_SYNC_MODE_400HZ};
-  auto rslt = bmi08a_configure_data_synchronization(sync_cfg, &dev_);
+  auto rslt = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 
@@ -366,26 +382,39 @@ bool Bmi088<Spi>::open() {
 }
 
 template <>
-typename Sensor<Spi, Accelerometer, Gyroscope>::TupleReturnType Bmi088<Spi>::read() {
+typename Sensor<Spi, Accelerometer, Gyroscope, Time>::TupleReturnType Bmi088<Spi>::read() {
+  std::tuple<Accelerometer::ReturnType, Gyroscope::ReturnType, Time::ReturnType> measurement{};
   bmi08_sensor_data acc{}, gyro{};
+  auto now = std::chrono::system_clock::now();
 
   // TODO(rikba): This is not really burst but rather returning one after the other. Implement
   // actual burst.
   // TODO(rikba): Temperature
-  auto rslt = bmi08a_get_synchronized_data(&acc, &gyro, &dev_);
-  printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
-
+  uint8_t drdy_acc = 0;
+  auto rslt = bmi08a_get_status(&drdy_acc, &dev_);
+  printErrorCodeResults("bmi08a_get_status", rslt);
   if (rslt != BMI08_OK) {
-    return {std::nullopt, std::nullopt};
+    return measurement;
   }
-  vec3<double> acceleration = {lsbToMps2(acc.x, dev_.accel_cfg.range),
-                               lsbToMps2(acc.y, dev_.accel_cfg.range),
-                               lsbToMps2(acc.z, dev_.accel_cfg.range)};
-  vec3<double> gyroscope = {lsbToRps(gyro.x, dev_.gyro_cfg.range),
-                            lsbToRps(gyro.y, dev_.gyro_cfg.range),
-                            lsbToRps(gyro.z, dev_.gyro_cfg.range)};
+  if (drdy_acc) {
+    rslt = bmi08a_get_synchronized_data(&acc, &gyro, &dev_);
+    printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
 
-  return std::make_tuple(acceleration, gyroscope);
+    if (rslt != BMI08_OK) {
+      return measurement;
+    }
+    std::get<0>(measurement) = {lsbToMps2(acc.x, dev_.accel_cfg.range),
+                                lsbToMps2(acc.y, dev_.accel_cfg.range),
+                                lsbToMps2(acc.z, dev_.accel_cfg.range)};
+    std::get<1>(measurement) = {lsbToRps(gyro.x, dev_.gyro_cfg.range),
+                                lsbToRps(gyro.y, dev_.gyro_cfg.range),
+                                lsbToRps(gyro.z, dev_.gyro_cfg.range)};
+    std::get<2>(measurement) =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+  } else {
+    LOG(W, "No IMU data ready");
+  }
+  return measurement;
 }
 
 template <>
