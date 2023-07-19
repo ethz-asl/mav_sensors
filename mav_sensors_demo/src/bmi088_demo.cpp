@@ -11,6 +11,8 @@
 #include "mav_sensors_drivers/sensor_types/Gyroscope.h"
 #include "mav_sensors_drivers/sensor_types/Time.h"
 
+using namespace mav_sensors;
+
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
   SensorConfig cfg;

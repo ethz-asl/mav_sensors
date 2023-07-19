@@ -10,7 +10,11 @@
 
 #include "mav_sensors_core/common/vec.h"
 
+namespace mav_sensors {
+
 class Accelerometer : public SensorType {
  public:
   typedef std::optional<vec3<double>> ReturnType;
 };
+
+}  // namespace mav_sensors

@@ -8,6 +8,8 @@
 
 #include "mav_sensors_core/driver.h"
 
+namespace mav_sensors {
+
 typedef unsigned char byte;
 
 class Spi : public Driver {
@@ -53,3 +55,5 @@ class Spi : public Driver {
   int fd_{};
   std::string path_;
 };
+
+}  // namespace mav_sensors

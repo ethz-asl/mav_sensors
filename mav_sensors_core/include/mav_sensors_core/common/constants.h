@@ -4,6 +4,6 @@
 
 #pragma once
 
-namespace mav_sensors_core {
+namespace mav_sensors {
 inline static const constexpr double g_ = 9.80665;
-}  // namespace mav_sensors_core
+}  // namespace mav_sensors

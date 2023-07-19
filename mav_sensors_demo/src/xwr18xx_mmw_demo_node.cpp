@@ -7,6 +7,8 @@
 #include "mav_sensors_core/sensor_config.h"
 #include "mav_sensors_drivers/radar/xwr18xx_mmw_demo.h"
 
+using namespace mav_sensors;
+
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
   SensorConfig cfg;

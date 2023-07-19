@@ -10,6 +10,8 @@
 
 #include "mav_sensors_core/driver.h"
 
+namespace mav_sensors {
+
 typedef unsigned char byte;
 
 class Serial : public Driver {
@@ -44,9 +46,9 @@ class Serial : public Driver {
    */
   [[nodiscard]] ssize_t write(const void* data, size_t len_data) const;
 
-  /** 
+  /**
    * @brief Flush read buffer.
-  */
+   */
   [[nodiscard]] bool flushReadBuffer() const;
 
   /**
@@ -96,3 +98,5 @@ class Serial : public Driver {
   bool is_open_{false};
   int fd_{};
 };
+
+}  // namespace mav_sensors

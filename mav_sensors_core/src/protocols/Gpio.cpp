@@ -6,10 +6,12 @@
 
 #include "mav_sensors_core/protocols/common/PosixFilesystem.h"
 
+using namespace mav_sensors;
+
 Gpio::Gpio(int gpio_nr, const std::string& name, GpioDirection direction)
-    : direction_(direction), gpio_nr_(gpio_nr),
-      Driver(SYSFS_PATH + std::string(GPIO) + "/" + name) {
-}
+    : direction_(direction),
+      gpio_nr_(gpio_nr),
+      Driver(SYSFS_PATH + std::string(GPIO) + "/" + name) {}
 
 bool Gpio::open() {
   return PosixFilesystem::write(SYSFS_PATH + std::string(GPIO) + std::string(SYSFS_EXPORT),
@@ -60,6 +62,4 @@ bool Gpio::setGpioState(GpioState gpio_state) const {
   return PosixFilesystem::write(path_ + "/value", mode);
 }
 
-bool Gpio::isExported() const {
-  return PosixFilesystem::directoryExists((path_ + "/"));
-}
+bool Gpio::isExported() const { return PosixFilesystem::directoryExists((path_ + "/")); }

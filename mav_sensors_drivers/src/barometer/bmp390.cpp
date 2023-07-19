@@ -4,6 +4,8 @@
 
 #include "mav_sensors_drivers/barometer/bmp390.h"
 
+using namespace mav_sensors;
+
 template <>
 Temperature::ReturnType BMP390<Spi>::readTemperature() {
   bmp3_data data{std::nan("1"), std::nan("1")};

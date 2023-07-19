@@ -14,6 +14,8 @@
 #include <log++.h>
 #include <sys/ioctl.h>
 
+using namespace mav_sensors;
+
 Spi::Spi() = default;
 
 Spi::Spi(std::string path) : path_(std::move(path)) {}

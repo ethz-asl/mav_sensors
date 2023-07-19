@@ -4,6 +4,8 @@
 
 #include "mav_sensors_core/sensor_config.h"
 
+using namespace mav_sensors;
+
 SensorConfig::SensorConfig() = default;
 
 void SensorConfig::set(const std::string& key, const std::string& value) {

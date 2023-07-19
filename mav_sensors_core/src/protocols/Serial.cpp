@@ -9,6 +9,8 @@
 
 // Created by brik on 01.07.23.
 
+using namespace mav_sensors;
+
 Serial::Serial() = default;
 Serial::~Serial() { ::close(fd_); }
 
@@ -101,7 +103,7 @@ bool Serial::flushReadBuffer() const {
 
 bool Serial::flushWriteBuffer() const {
   auto res = ::ioctl(fd_, TCFLSH, TCIOFLUSH);
-      LOG(E, res < 0, "Error on flushWriteBuffer: " << strerror(errno));
+  LOG(E, res < 0, "Error on flushWriteBuffer: " << strerror(errno));
   return res >= 0;
 }
 

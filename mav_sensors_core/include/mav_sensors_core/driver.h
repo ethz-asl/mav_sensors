@@ -8,6 +8,8 @@
 
 #include "sensor_config.h"
 
+namespace mav_sensors {
+
 class Driver {
  public:
   Driver() = default;
@@ -26,3 +28,5 @@ class Driver {
  protected:
   std::string path_;
 };
+
+}  // namespace mav_sensors

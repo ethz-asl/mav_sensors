@@ -21,6 +21,8 @@
 #include "mav_sensors_drivers/sensor_types/Gyroscope.h"
 #include "mav_sensors_drivers/sensor_types/Time.h"
 
+namespace mav_sensors {
+
 template <typename HardwareProtocol>
 class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> {
   static_assert(std::is_same<HardwareProtocol, Spi>::value,
@@ -201,7 +203,7 @@ class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> {
 };
 
 template <>
-Bmi088<Spi>::Bmi088(SensorConfig cfg) : cfg_(std::move(cfg)) {}
+Bmi088<Spi>::Bmi088(SensorConfig cfg) : super(cfg) {}
 
 template <>
 bool Bmi088<Spi>::setupBmiSpi() {
@@ -453,7 +455,7 @@ int8_t Bmi088<T>::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t l
 
 template <typename T>
 double Bmi088<T>::lsbToMps2(int16_t val, int8_t g_range) {
-  return (mav_sensors_core::g_ * val * computeAccRange(g_range)) / half_scale_;
+  return (mav_sensors::g_ * val * computeAccRange(g_range)) / half_scale_;
 }
 
 template <typename T>
@@ -602,3 +604,5 @@ std::tuple<Accelerometer::ReturnType> Bmi088<Spi>::read<Accelerometer>() {
                                       lsbToMps2(acc.y, dev_.accel_cfg.range),
                                       lsbToMps2(acc.z, dev_.accel_cfg.range)});
 }
+
+}  // namespace mav_sensors
