@@ -37,6 +37,7 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
    * @param SensorConfig
    */
   explicit Adis16448(SensorConfig cfg_);
+  explicit Adis16448() = default;
 
   bool open() override;
 
@@ -179,8 +180,6 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
   bool is_config_valid_{true};
   int burst_len_{DEFAULT_BURST_LEN};
   int crc_error_count_{0};
-
-  SensorConfig cfg_;
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 2000000;
   inline static const constexpr uint32_t spi_burst_speed_hz_ = 1000000;

@@ -34,6 +34,7 @@ class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> {
    * @param path to gyro spidev, e.g., "/dev/spidev0.1".
    */
   explicit Bmi088(SensorConfig cfg);
+  explicit Bmi088() = default;
 
   template <typename... T>
   std::tuple<typename T::ReturnType...> read() = delete;
@@ -197,7 +198,6 @@ class Bmi088 : public Sensor<HardwareProtocol, Accelerometer, Gyroscope, Time> {
   inline static const constexpr uint16_t gyro_odr_max_ = 2000;
   inline static const constexpr uint16_t gyro_bw_max_ = 532;
   inline static const constexpr uint32_t half_scale_ = 1 << (BMI08_16_BIT_RESOLUTION - 1);
-  SensorConfig cfg_;
 };
 
 template <>

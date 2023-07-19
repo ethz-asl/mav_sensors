@@ -37,6 +37,8 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time>
    */
   explicit BMP390(SensorConfig sensorConfig) : cfg_(std::move(sensorConfig)){};
 
+  explicit BMP390() = default;
+
   // Read function to be passed to BMP3 device driver.
   static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
 
@@ -165,7 +167,6 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time>
   }
 
   Spi drv_;
-  SensorConfig cfg_;
 
   /*!
    *  @brief BMP device with communication settings and BMP configuration. The configuration will be
