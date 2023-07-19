@@ -17,6 +17,7 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   typedef Sensor<Serial, Radar> super;
 
   explicit Xwr18XxMmwDemo(SensorConfig sensor_cfg) : cfg_(std::move(sensor_cfg)){};
+  explicit Xwr18XxMmwDemo() = default;
 
   bool open() override;
 
@@ -92,7 +93,6 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
 
   Serial drv_cfg_;
   Serial drv_data_;
-  SensorConfig cfg_;
 
   inline static const constexpr std::string_view kPrompt{"mmwDemo:/>"};
   inline static const constexpr uint8_t kTimeout = 100;
