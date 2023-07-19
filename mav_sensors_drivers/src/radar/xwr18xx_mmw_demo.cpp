@@ -9,6 +9,8 @@
 
 #include "mav_sensors_drivers/sensor_types/Radar.h"
 
+using namespace mav_sensors;
+
 template <>
 Xwr18XxMmwDemo::MmwDemoOutputMessageType Xwr18XxMmwDemo::parse(const std::vector<byte>& data,
                                                                size_t* offset) const {

@@ -9,6 +9,8 @@
 
 #include "mav_sensors_core/sensor.h"
 
+namespace mav_sensors {
+
 class Radar : public SensorType {
  public:
   inline Radar(size_t num_detections) : cfar_detections(num_detections) {}
@@ -26,3 +28,5 @@ class Radar : public SensorType {
   uint64_t unix_stamp_ns{0};
   typedef Radar ReturnType;
 };
+
+}  // namespace mav_sensors

@@ -6,6 +6,8 @@
 
 #include <utility>
 
+using namespace mav_sensors;
+
 Driver::Driver(std::string path) : path_(std::move(path)) {}
 
 const std::string& Driver::getPath() const { return path_; }

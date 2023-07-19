@@ -9,6 +9,10 @@
 #include "mav_sensors_drivers/barometer/bmp390.h"
 #include "mav_sensors_drivers/sensor_types/FluidPressure.h"
 
+using namespace mav_sensors;
+
+namespace ms = mav_sensors;
+
 int main(int argc, char** argv) {
   LOG_INIT(*argv);
   SensorConfig cfg;
@@ -28,11 +32,11 @@ int main(int argc, char** argv) {
         "Temperature: " << std::get<1>(measurements).value() << " C");
     LOG(I, std::get<2>(measurements).has_value(),
         "Time: " << std::get<2>(measurements).value() << " s");
-    auto m_t = bmp390.read<Temperature, Time>();
+    auto m_t = bmp390.read<ms::Temperature, ms::Time>();
     LOG(I, std::get<0>(m_t).has_value() && std::get<1>(m_t).has_value(),
         "Temperature (single measurement): " << std::get<0>(m_t).value()
                                              << " C at t=" << std::get<1>(m_t).value() << " s");
-    auto m_p = bmp390.read<FluidPressure, Time>();
+    auto m_p = bmp390.read<ms::FluidPressure, ms::Time>();
     LOG(I, std::get<0>(m_p).has_value() && std::get<1>(m_p).has_value(),
         "Pressure (single measurement): " << std::get<0>(m_p).value()
                                           << " Pa at t=" << std::get<1>(m_p).value() << " s");

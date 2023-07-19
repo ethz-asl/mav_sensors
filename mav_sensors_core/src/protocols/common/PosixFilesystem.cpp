@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+using namespace mav_sensors;
+
 bool PosixFilesystem::write(const std::string &path, const std::string &message) noexcept {
   int fd = open((path).c_str(), O_WRONLY);
   if (fd == -1) {

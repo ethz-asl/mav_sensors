@@ -4,10 +4,12 @@
 
 #pragma once
 
-#include <string>
 #include <sstream>
+#include <string>
 
-template<typename T>
+namespace mav_sensors {
+
+template <typename T>
 struct vec3 {
   T x;
   T y;
@@ -20,42 +22,44 @@ struct vec3 {
   }
 };
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator/(const vec3<T> t, T num) {
   return {t.x / num, t.y / num, t.z / num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator/=(vec3<T> &t, T num) {
   return {t.x /= num, t.y /= num, t.z /= num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator*(const vec3<T> t, T num) {
   return {t.x * num, t.y * num, t.z * num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator*=(vec3<T> &t, T num) {
   return {t.x *= num, t.y *= num, t.z *= num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator+(const vec3<T> t, T num) {
   return {t.x + num, t.y + num, t.z + num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator+=(vec3<T> &t, T num) {
   return {t.x += num, t.y += num, t.z += num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator-(const vec3<T> t, T num) {
   return {t.x - num, t.y - num, t.z - num};
 }
 
-template<typename T>
+template <typename T>
 inline vec3<T> operator-=(vec3<T> &t, T num) {
   return {t.x -= num, t.y -= num, t.z -= num};
 }
+
+}  // namespace mav_sensors

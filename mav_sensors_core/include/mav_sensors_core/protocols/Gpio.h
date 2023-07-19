@@ -6,6 +6,8 @@
 
 #include "mav_sensors_core/driver.h"
 
+namespace mav_sensors {
+
 enum class GpioDirection { IN, OUT };
 enum class GpioState { HIGH, LOW };
 
@@ -52,3 +54,5 @@ class Gpio : public Driver {
   inline static const constexpr char* SYSFS_UNEXPORT = "/unexport";
   inline static const constexpr char* GPIO = "/gpio";
 };
+
+}  // namespace mav_sensors

@@ -27,8 +27,10 @@
 #include "mav_sensors_drivers/sensor_types/Magnetometer.h"
 #include "mav_sensors_drivers/sensor_types/Temperature.h"
 
-class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
-                                Magnetometer, Temperature> {
+namespace mav_sensors {
+
+class Adis16448
+    : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope, Magnetometer, Temperature> {
   typedef Sensor<Spi, Accelerometer, FluidPressure, Gyroscope, Magnetometer, Temperature> super;
 
  public:
@@ -36,12 +38,12 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
    * Adis16448 Constructor
    * @param SensorConfig
    */
-  explicit Adis16448(SensorConfig cfg_);
+  explicit Adis16448(SensorConfig cfg);
   explicit Adis16448() = default;
 
   bool open() override;
 
-  int getRaw(const std::vector<byte>& cmd);
+  int getRaw(const std::vector<byte> &cmd);
 
   template <typename... T>
   std::tuple<typename T::ReturnType...> read() = delete;
@@ -90,9 +92,9 @@ class Adis16448 : public Sensor<Spi, Accelerometer, FluidPressure, Gyroscope,
   };
 
   /*!
-  *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
-  *  @return void.
-  */
+   *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
+   *  @return void.
+   */
   void printImuConfig();
 
   /**
@@ -231,10 +233,10 @@ std::tuple<Magnetometer::ReturnType> Adis16448::read<Magnetometer>() {
 }
 
 /**
-   * Note that this temperature represents
-   * an internal temperature reading, which does not precisely
-   * represent external conditions. The intended use of TEMP_OUT
-   * is to monitor relative changes in temperature.
+ * Note that this temperature represents
+ * an internal temperature reading, which does not precisely
+ * represent external conditions. The intended use of TEMP_OUT
+ * is to monitor relative changes in temperature.
  */
 
 template <>
@@ -243,3 +245,5 @@ std::tuple<Temperature::ReturnType> Adis16448::read<Temperature>() {
   int a = signedWordToInt(readReg(TEMP_OUT));
   return 31 + (a * 0.07386);
 }
+
+}  // namespace mav_sensors

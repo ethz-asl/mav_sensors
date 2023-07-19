@@ -4,7 +4,9 @@
 
 #include "mav_sensors_drivers/imu/adis16448.h"
 
-Adis16448::Adis16448(SensorConfig cfg) : cfg_(std::move(cfg)) {
+using namespace mav_sensors;
+
+Adis16448::Adis16448(SensorConfig cfg) : super(cfg) {
   if (cfg_.get("path").has_value()) {
     driver_ = Spi(cfg_.get("path").value());
   } else {
@@ -16,7 +18,6 @@ Adis16448::Adis16448(SensorConfig cfg) : cfg_(std::move(cfg)) {
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
   return (((int)*(signed char *)(word.data())) * 1 << CHAR_BIT) | word[1];
 }
-
 
 int Adis16448::unsignedWordToInt(const std::vector<byte> &word) {
   return ((word[0] << CHAR_BIT) + word[1]);
@@ -280,12 +281,10 @@ void Adis16448::softwareReset() {
   usleep(ms_);
 }
 
-
 bool Adis16448::close() {
   softwareReset();
   return driver_.close();
 }
-
 
 vec3<double> Adis16448::convertGyro(vec3<double> gyro) {
   gyro /= 25.;                  // convert to degrees
@@ -300,21 +299,18 @@ double Adis16448::convertBarometer(const std::vector<byte> &word) {
   return unsignedWordToInt(word) * 0.02;
 }
 
-
 vec3<double> Adis16448::convertMagnetometer(vec3<double> magnetometer) {
   magnetometer /= 7.;         // Convert to mG;
   magnetometer /= 10000000.;  // Convert to tesla
   return magnetometer;
 }
 
-
 vec3<double> Adis16448::convertAcceleration(vec3<double> accel) {
   accel /= 1200.;  // Convert to g
-  return accel * mav_sensors_core::g_;
+  return accel * mav_sensors::g_;
 }
 
-
-int Adis16448::getRaw(const std::vector<byte>& cmd) {
+int Adis16448::getRaw(const std::vector<byte> &cmd) {
   std::vector<byte> res = driver_.xfer(cmd, spi_response_size_, spi_transfer_speed_hz_);
   return unsignedWordToInt(res);
 }

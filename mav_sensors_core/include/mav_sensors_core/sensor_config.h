@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 
+namespace mav_sensors {
 
 /**
  * Sensor specific properties for initialization
@@ -26,3 +27,5 @@ class SensorConfig {
  private:
   std::unordered_map<std::string, std::string> cfg_{};
 };
+
+}  // namespace mav_sensors

@@ -10,6 +10,8 @@
 #include "driver.h"
 #include "sensor_config.h"
 
+namespace mav_sensors {
+
 class SensorType {
   typedef void ReturnType;
 };
@@ -29,6 +31,7 @@ class Sensor {
 
   static_assert(IsValidReturnType<S...>);
 
+  Sensor(SensorConfig cfg) : cfg_(std::move(cfg)) {}
   virtual bool open() = 0;
   virtual TupleReturnType read() = 0;
   inline void setConfig(SensorConfig cfg) { cfg_ = std::move(cfg); }
@@ -37,3 +40,5 @@ class Sensor {
  protected:
   SensorConfig cfg_;
 };
+
+}  // namespace mav_sensors

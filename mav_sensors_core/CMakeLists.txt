@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp lpp)
 
 catkin_package(
         INCLUDE_DIRS include
-        LIBRARIES mav_sensors_core
+        LIBRARIES ${PROJECT_NAME}
         CATKIN_DEPENDS roscpp lpp
 )
 
@@ -15,8 +15,7 @@ catkin_package(
 ## Build ##
 ###########
 include_directories(
-        include lib/BMP3-Sensor-API
-                ${catkin_INCLUDE_DIRS}
+        include ${catkin_INCLUDE_DIRS}
 )
 
 add_compile_definitions(MODE_ROSLOG)

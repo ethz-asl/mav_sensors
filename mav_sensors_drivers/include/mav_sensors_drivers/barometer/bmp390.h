@@ -23,6 +23,8 @@
 #include "mav_sensors_drivers/sensor_types/Temperature.h"
 #include "mav_sensors_drivers/sensor_types/Time.h"
 
+namespace mav_sensors {
+
 template <typename HardwareProtocol>
 class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time> {
  public:
@@ -32,10 +34,10 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time>
 
   /**
    *
-   * @param sensorConfig
+   * @param SensorConfig cfg
    *
    */
-  explicit BMP390(SensorConfig sensorConfig) : cfg_(std::move(sensorConfig)){};
+  explicit BMP390(SensorConfig cfg) : super(cfg){};
 
   explicit BMP390() = default;
 
@@ -57,7 +59,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time>
   static void usSleep(uint32_t period, [[maybe_unused]] void *intf_ptr) { usleep(period); }
 
   bool open() override {
-    std::optional<std::string> path = cfg_.get("path");
+    std::optional<std::string> path = super::cfg_.get("path");
 
     if (!path.has_value()) {
       LOG(E, "Sensor config must have field path");
@@ -183,3 +185,25 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time>
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 7500000;
 };
+
+template <>
+Temperature::ReturnType BMP390<Spi>::readTemperature();
+
+template <>
+FluidPressure::ReturnType BMP390<Spi>::readPressure();
+template <>
+template <>
+std::tuple<Temperature::ReturnType, Time::ReturnType> BMP390<Spi>::read<Temperature, Time>();
+
+template <>
+template <>
+std::tuple<FluidPressure::ReturnType, Time::ReturnType> BMP390<Spi>::read<FluidPressure, Time>();
+
+template <>
+int8_t BMP390<Spi>::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
+
+template <>
+int8_t BMP390<Spi>::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
+                             void *intf_ptr);
+
+}  // namespace mav_sensors
