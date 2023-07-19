@@ -31,7 +31,8 @@ class Sensor {
 
   static_assert(IsValidReturnType<S...>);
 
-  Sensor(SensorConfig cfg) : cfg_(std::move(cfg)) {}
+  explicit Sensor() = default;
+  explicit Sensor(SensorConfig cfg) : cfg_(std::move(cfg)) {}
   virtual bool open() = 0;
   virtual TupleReturnType read() = 0;
   inline void setConfig(SensorConfig cfg) { cfg_ = std::move(cfg); }
