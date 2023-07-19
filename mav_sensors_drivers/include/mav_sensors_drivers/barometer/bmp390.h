@@ -123,7 +123,7 @@ class BMP390 : public Sensor<HardwareProtocol, FluidPressure, Temperature, Time>
       /* NOTE : Read status register again to clear data ready interrupt status */
       checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
     } else {
-      LOG(W, "Data not ready read all");
+      LOG(D, "Data not ready read all");
     }
     return measurement;
   }
@@ -200,7 +200,7 @@ Temperature::ReturnType BMP390<Spi>::readTemperature() {
     /* NOTE : Read status register again to clear data ready interrupt status */
     checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
   } else {
-    LOG(W, "Data not ready readTemperature");
+    LOG(D, "Data not ready readTemperature");
   }
   return measurement;
 }
@@ -222,7 +222,7 @@ FluidPressure::ReturnType BMP390<Spi>::readPressure() {
     /* NOTE : Read status register again to clear data ready interrupt status */
     checkErrorCodeResults("bmp3_get_status", bmp3_get_status(&status_, &dev_));
   } else {
-    LOG(W, "Data not ready readPressure");
+    LOG(D, "Data not ready readPressure");
   }
   return measurement;
 }
