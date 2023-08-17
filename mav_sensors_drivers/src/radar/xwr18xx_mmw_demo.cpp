@@ -133,6 +133,12 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
         std::get<Radar>(measurement).cfar_detections[i].snr = parse<int16_t>(tlv, &offset);
         std::get<Radar>(measurement).cfar_detections[i].noise = parse<int16_t>(tlv, &offset);
       }
+    } else if (tlv_type == MMWDEMO_OUTPUT_MSG_AZIMUT_ELEVATION_STATIC_HEAT_MAP) {
+      std::get<Radar>(measurement).azimuth_elvation_static_heat_map.resize(tlv_length / sizeof(int16_t));
+      for (size_t i = 0; i < tlv_length / sizeof(int16_t); ++i) {
+        std::get<Radar>(measurement).azimuth_elvation_static_heat_map[i] =
+            parse<int16_t>(tlv, &offset);
+      }
     } else {
       // Skip.
       offset += tlv_length;

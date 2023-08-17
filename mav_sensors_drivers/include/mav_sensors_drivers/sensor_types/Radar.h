@@ -24,6 +24,7 @@ class Radar : public SensorType {
     int16_t noise{-1};
   };
   std::vector<CfarDetection> cfar_detections;
+  std::vector<int16_t> azimuth_elvation_static_heat_map;
   uint32_t hardware_stamp{0xFFFFFFFF};
   uint64_t unix_stamp_ns{0};
   typedef Radar ReturnType;
