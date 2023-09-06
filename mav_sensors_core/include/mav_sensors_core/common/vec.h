@@ -53,6 +53,16 @@ inline vec3<T> operator+=(vec3<T> &t, T num) {
 }
 
 template <typename T>
+inline vec3<T> operator+(const vec3<T> t1, const vec3<T> t2) {
+  return {t1.x + t2.x, t1.y + t2.y, t1.z + t2.z};
+}
+
+template <typename T>
+inline vec3<T> operator+=(vec3<T> &t1, const vec3<T> t2) {
+  return {t1.x += t2.x, t1.y += t2.y, t1.z += t2.z};
+}
+
+template <typename T>
 inline vec3<T> operator-(const vec3<T> t, T num) {
   return {t.x - num, t.y - num, t.z - num};
 }
