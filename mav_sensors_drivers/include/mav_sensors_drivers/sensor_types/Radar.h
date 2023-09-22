@@ -24,9 +24,10 @@ class Radar : public SensorType {
     float velocity{std::nanf("1")};
     int16_t snr{-1};
     int16_t noise{-1};
-    void print(const std::string& s = "") const {
-      LOG(I, s.c_str() << "x: " << x << " y: " << y << " z: " << z << " velocity: " << velocity
-                       << " snr: " << snr << " noise: " << noise);
+   std::ostream& operator<<(std::ostream& os) const {
+      os << "x: " << x << " y: " << y << " z: " << z << " velocity: " << velocity
+         << " snr: " << snr << " noise: " << noise;
+      return os;
     }
   };
   std::vector<CfarDetection> cfar_detections;
