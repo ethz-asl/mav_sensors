@@ -5,9 +5,8 @@
 #pragma once
 
 #include <cmath>
+#include <ostream>
 #include <vector>
-
-#include <log++.h>
 
 #include "mav_sensors_core/sensor.h"
 
