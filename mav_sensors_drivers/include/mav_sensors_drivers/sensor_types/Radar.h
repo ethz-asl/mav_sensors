@@ -24,9 +24,9 @@ class Radar : public SensorType {
     float velocity{std::nanf("1")};
     int16_t snr{-1};
     int16_t noise{-1};
-   std::ostream& operator<<(std::ostream& os) const {
-      os << "x: " << x << " y: " << y << " z: " << z << " velocity: " << velocity
-         << " snr: " << snr << " noise: " << noise;
+    friend std::ostream& operator<<(std::ostream& os, const CfarDetection& cd) {
+      os << "x: " << cd.x << " y: " << cd.y << " z: " << cd.z << " velocity: " << cd.velocity
+         << " snr: " << cd.snr << " noise: " << cd.noise;
       return os;
     }
   };
@@ -35,13 +35,13 @@ class Radar : public SensorType {
   uint64_t unix_stamp_ns{0};
   typedef Radar ReturnType;
 
-  void print(const std::string& s = "") const {
-    LOG(I, s.c_str() << cfar_detections.size() << " radar detections:");
-    for (const auto& detection : cfar_detections) {
-      detection.print(s + "- ");
+  friend std::ostream& operator<<(std::ostream& os, const Radar& r) {
+    os << "Radar detections: ";
+    for (const auto& detection : r.cfar_detections) {
+      os << "- " << detection << " ";
     }
-    LOG(I, s.c_str() << "Hardware stamp: " << hardware_stamp);
-    LOG(I, s.c_str() << "Unix stamp: " << unix_stamp_ns);
+    os << "Hardware stamp: " << r.hardware_stamp << " Unix stamp: " << r.unix_stamp_ns;
+    return os;
   }
 };
 
