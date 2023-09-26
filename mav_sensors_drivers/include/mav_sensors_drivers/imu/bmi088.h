@@ -342,6 +342,31 @@ bool Bmi088<Spi>::open() {
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 
+  // Configure filter settings.
+  std::optional<std::string> acc_range = cfg_.get("acc_range");
+  std::optional<std::string> acc_bwp = cfg_.get("acc_bwp");
+  std::optional<std::string> acc_odr = cfg_.get("acc_odr");
+  std::optional<std::string> gyro_range = cfg_.get("gyro_range");
+  std::optional<std::string> gyro_bw = cfg_.get("gyro_bw");
+
+  if (acc_range.has_value())
+    dev_.accel_cfg.range = static_cast<uint8_t>(std::stoi(acc_range.value(), nullptr, 16));
+  if (acc_bwp.has_value())
+    dev_.accel_cfg.bw = static_cast<uint8_t>(std::stoi(acc_bwp.value(), nullptr, 16));
+  if (acc_odr.has_value())
+    dev_.accel_cfg.odr = static_cast<uint8_t>(std::stoi(acc_odr.value(), nullptr, 16));
+  if (gyro_range.has_value())
+    dev_.gyro_cfg.range = static_cast<uint8_t>(std::stoi(gyro_range.value(), nullptr, 16));
+  if (gyro_bw.has_value()) {
+    dev_.gyro_cfg.bw = static_cast<uint8_t>(std::stoi(gyro_bw.value(), nullptr, 16));
+    dev_.gyro_cfg.odr = static_cast<uint8_t>(std::stoi(gyro_bw.value(), nullptr, 16));
+  }
+
+  rslt = bmi08a_set_meas_conf(&dev_);
+  printErrorCodeResults("bmi08a_set_meas_conf", rslt);
+  rslt = bmi08g_set_meas_conf(&dev_);
+  printErrorCodeResults("bmi08g_set_meas_conf", rslt);
+
   /*set accel interrupt pin configuration*/
 
   bmi08_int_cfg int_config{
