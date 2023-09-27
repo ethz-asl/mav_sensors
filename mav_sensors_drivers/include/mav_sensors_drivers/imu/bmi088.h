@@ -453,7 +453,7 @@ void Bmi088<Spi>::printImuConfig() {
   printErrorCodeResults("bmi08a_get_meas_conf", rslt);
 
   LOG(I, "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range) << " m/s^2");
-  LOG(I, "accel_cfg.bw (OSR):" << +computeAccBw(dev_.accel_cfg.bw));
+  LOG(I, "accel_cfg.bw (OSR): " << +computeAccBw(dev_.accel_cfg.bw) << "-fold oversampling.");
   LOG(I, "accel_cfg.odr: " << computeAccOdr(dev_.accel_cfg.odr) << " Hz");
   LOG(I, "gyro_cfg.range: " << computeGyroRange(dev_.gyro_cfg.range) << " dps");
   printGyroBw();
@@ -500,7 +500,7 @@ uint16_t Bmi088<T>::computeGyroRange(uint16_t gyro_cfg_range) {
 
 template <typename T>
 uint8_t Bmi088<T>::computeAccBw(uint8_t accel_cfg_bw) {
-  return acc_bw_osr_max_ / (1 << (accel_cfg_bw - BMI08_ACCEL_BW_OSR4));
+  return acc_bw_osr_max_ / (1 << (accel_cfg_bw & 0b111));
 }
 
 template <typename T>
