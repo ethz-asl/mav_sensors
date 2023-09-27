@@ -362,7 +362,7 @@ bool Bmi088<Spi>::open() {
     dev_.gyro_cfg.odr = static_cast<uint8_t>(std::stoi(gyro_bw.value(), nullptr, 16));
   }
 
-  rslt = bmi08a_set_meas_conf(&dev_);
+  rslt = bmi08xa_set_meas_conf(&dev_);
   printErrorCodeResults("bmi08a_set_meas_conf", rslt);
   rslt = bmi08g_set_meas_conf(&dev_);
   printErrorCodeResults("bmi08g_set_meas_conf", rslt);
