@@ -500,7 +500,7 @@ uint16_t Bmi088<T>::computeGyroRange(uint16_t gyro_cfg_range) {
 
 template <typename T>
 uint8_t Bmi088<T>::computeAccBw(uint8_t accel_cfg_bw) {
-  return acc_bw_osr_max_ / (1 << (accel_cfg_bw & 0b111));
+  return acc_bw_osr_max_ / (1 << (accel_cfg_bw));
 }
 
 template <typename T>
