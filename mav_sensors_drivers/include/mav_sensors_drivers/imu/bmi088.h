@@ -342,6 +342,31 @@ bool Bmi088<Spi>::open() {
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 
+  // Configure filter settings.
+  std::optional<std::string> acc_range = cfg_.get("acc_range");
+  std::optional<std::string> acc_bwp = cfg_.get("acc_bwp");
+  std::optional<std::string> acc_odr = cfg_.get("acc_odr");
+  std::optional<std::string> gyro_range = cfg_.get("gyro_range");
+  std::optional<std::string> gyro_bw = cfg_.get("gyro_bw");
+
+  if (acc_range.has_value())
+    dev_.accel_cfg.range = static_cast<uint8_t>(std::stoi(acc_range.value(), nullptr, 16));
+  if (acc_bwp.has_value())
+    dev_.accel_cfg.bw = static_cast<uint8_t>(std::stoi(acc_bwp.value(), nullptr, 16));
+  if (acc_odr.has_value())
+    dev_.accel_cfg.odr = static_cast<uint8_t>(std::stoi(acc_odr.value(), nullptr, 16));
+  if (gyro_range.has_value())
+    dev_.gyro_cfg.range = static_cast<uint8_t>(std::stoi(gyro_range.value(), nullptr, 16));
+  if (gyro_bw.has_value()) {
+    dev_.gyro_cfg.bw = static_cast<uint8_t>(std::stoi(gyro_bw.value(), nullptr, 16));
+    dev_.gyro_cfg.odr = static_cast<uint8_t>(std::stoi(gyro_bw.value(), nullptr, 16));
+  }
+
+  rslt = bmi08xa_set_meas_conf(&dev_);
+  printErrorCodeResults("bmi08a_set_meas_conf", rslt);
+  rslt = bmi08g_set_meas_conf(&dev_);
+  printErrorCodeResults("bmi08g_set_meas_conf", rslt);
+
   /*set accel interrupt pin configuration*/
 
   bmi08_int_cfg int_config{
@@ -428,7 +453,7 @@ void Bmi088<Spi>::printImuConfig() {
   printErrorCodeResults("bmi08a_get_meas_conf", rslt);
 
   LOG(I, "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range) << " m/s^2");
-  LOG(I, "accel_cfg.bw (OSR):" << +computeAccBw(dev_.accel_cfg.bw));
+  LOG(I, "accel_cfg.bw (OSR): " << +computeAccBw(dev_.accel_cfg.bw) << "-fold oversampling.");
   LOG(I, "accel_cfg.odr: " << computeAccOdr(dev_.accel_cfg.odr) << " Hz");
   LOG(I, "gyro_cfg.range: " << computeGyroRange(dev_.gyro_cfg.range) << " dps");
   printGyroBw();
@@ -475,7 +500,7 @@ uint16_t Bmi088<T>::computeGyroRange(uint16_t gyro_cfg_range) {
 
 template <typename T>
 uint8_t Bmi088<T>::computeAccBw(uint8_t accel_cfg_bw) {
-  return acc_bw_osr_max_ / (1 << (accel_cfg_bw - BMI08_ACCEL_BW_OSR4));
+  return acc_bw_osr_max_ / (1 << (accel_cfg_bw));
 }
 
 template <typename T>
