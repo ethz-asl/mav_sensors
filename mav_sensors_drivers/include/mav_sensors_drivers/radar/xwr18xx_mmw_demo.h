@@ -5,6 +5,7 @@
 #pragma once
 
 #include <log++.h>
+#include <mutex>
 #include <mav_sensors_core/protocols/Gpio.h>
 #include <mav_sensors_core/protocols/Serial.h>
 #include <mav_sensors_core/sensor.h>
@@ -69,12 +70,13 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
     return success;
   }
 
+  [[nodiscard]] bool loadConfig(const std::string& path);
+ 
  private:
   /**
    * Read xwr18xx radar config from file
    * @return
    */
-  [[nodiscard]] bool loadConfig(const std::string& path) const;
 
   /**
    * @brief Parse a value from a byte vector in big endian format.
@@ -92,6 +94,7 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   bool trigger_enabled_{false};
   int trigger_delay_{500};
   std::optional<Gpio> gpio_;
+  std::mutex mutex_;
 
   Serial drv_cfg_;
   Serial drv_data_;

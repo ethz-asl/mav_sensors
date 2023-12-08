@@ -31,6 +31,7 @@ float Xwr18XxMmwDemo::parse(const std::vector<byte>& data, size_t* offset) const
 }
 
 typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
+  std::lock_guard<std::mutex> lock(mutex_);
   std::tuple<Radar::ReturnType> measurement;
 
   auto now = std::chrono::system_clock::now();
@@ -257,7 +258,7 @@ bool Xwr18XxMmwDemo::open() {
   return true;
 }
 
-bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
+bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path){
   std::vector<std::string> lines{};
 
   std::ifstream config_file(file_path);
@@ -276,6 +277,7 @@ bool Xwr18XxMmwDemo::loadConfig(const std::string& file_path) const {
     return false;
   }
 
+  std::lock_guard<std::mutex> lock(mutex_);
   for (const auto& line : lines) {
     if (drv_cfg_.write(line.data(), line.length()) != line.length()) {
       LOG(E, "Error on config write" << ::strerror(errno));
