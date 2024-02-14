@@ -99,7 +99,8 @@ class Xwr18XxMmwDemo : public Sensor<Serial, Radar> {
   inline static const constexpr std::string_view kPrompt{"mmwDemo:/>"};
   inline static const constexpr uint8_t kTimeout = 100;
   inline static const constexpr size_t kHeaderSize = 8 * sizeof(uint32_t);
-  inline static const constexpr uint32_t kHeaderVersion = 0x03060000;  // Currently tested version.
+  // inline static const constexpr uint32_t kHeaderVersion = 0x03060000;  // Currently tested version.
+  inline static const std::vector<uint32_t> kHeaderVersion = {0x03060000, 0x03060100};
   inline static const constexpr uint32_t kHeaderPlatform = 0xa1843;    // Currently tested platform.
   inline static const std::vector<uint8_t> kMagicKey = {0x02, 0x01, 0x04, 0x03,
                                                         0x06, 0x05, 0x08, 0x07};

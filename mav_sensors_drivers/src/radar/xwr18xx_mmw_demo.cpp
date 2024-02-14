@@ -83,8 +83,11 @@ typename Xwr18XxMmwDemo::super::TupleReturnType Xwr18XxMmwDemo::read() {
   // Parse header.
   size_t offset = 0;
   auto version = parse<uint32_t>(header, &offset);
-  LOG(W, version != kHeaderVersion,
-      "XWR18XX firmware not version 0x" << std::hex << kHeaderVersion << " but 0x" << +version);
+  LOG(W, std::find(kHeaderVersion.begin(), kHeaderVersion.end(), version) == kHeaderVersion.end(),
+      "XWR18XX firmware not one of the expected versions: " << std::hex << kHeaderVersion[0]
+                                                            << " or " << kHeaderVersion[1]
+                                                            << ", but got 0x" << +version);
+
   auto total_packet_len = parse<uint32_t>(header, &offset);
   auto platform = parse<uint32_t>(header, &offset);
   LOG(W, platform != kHeaderPlatform,
@@ -177,6 +180,8 @@ bool Xwr18XxMmwDemo::open() {
       LOG(W, "Skipped config load");
     }
   }
+
+  return true;
 
   ConfigOptional trigger = cfg_.get("trigger");
 
