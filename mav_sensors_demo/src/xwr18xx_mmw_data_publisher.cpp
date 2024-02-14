@@ -27,11 +27,16 @@ class Xwr18XxMmwDemoNode {
   void run() {
     SensorConfig cfg;
     std::string current_file_path = __FILE__;
+    std::string radar_config;
+    if (!nh_private_.getParam("radar_config", radar_config)) {
+      LOG(F, "Failed to get radar_config param.");
+      return;
+    }
+
     size_t src_idx = current_file_path.rfind(std::string("/src/"));
     if (src_idx != std::string::npos) {
       auto pkg_directory = current_file_path.substr(0, src_idx);
-      cfg.set("path_cfg_file", pkg_directory + "/cfg/radar/xwr18xx_AOP_profile_best_velocity_resolution.cfg");
-      // cfg.set("path_cfg_file", pkg_directory + "/cfg/radar/radar_config.cfg");
+      cfg.set("path_cfg_file", pkg_directory + "/cfg/radar/" + radar_config);
     }
     cfg.set("path_cfg", "/dev/ttyUSB0");
     cfg.set("path_data", "/dev/ttyUSB1");
@@ -40,7 +45,6 @@ class Xwr18XxMmwDemoNode {
     cfg.set("trigger_gpio", "389");
     cfg.set("trigger_gpio_name", "PG.06");
 
-    LOG(I, "hoi");
     radar_ = std::make_unique<Xwr18XxMmwDemo>(cfg);
     if (!radar_->open()) {
       LOG(F, "Open failed.");
@@ -51,11 +55,7 @@ class Xwr18XxMmwDemoNode {
     ros::Timer timer_ = nh_private_.createTimer(ros::Duration(1.0 / poll_rate), [this](const ros::TimerEvent& event) {
         timerCallback(event);
     });
-
-    while (ros::ok()) {
-      ros::spinOnce();
-    }
-
+    ros::spin();
     radar_->close();
   }
 
@@ -66,7 +66,7 @@ class Xwr18XxMmwDemoNode {
     // LOG(I, "timed " << ros::Time::now().toSec()- time1);
     // LOG(I, "Unix stamp: " << std::get<Radar>(measurement).unix_stamp_ns);
     // LOG(I, "Hardware stamp: " << std::get<Radar>(measurement).hardware_stamp);
-    // LOG(I, "Number of detections: " << std::get<Radar>(measurement).cfar_detections.size());
+    LOG(I, "Number of detections: " << std::get<Radar>(measurement).cfar_detections.size());
     publish_pointcloud(measurement);
     return;
   }
