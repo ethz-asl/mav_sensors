@@ -76,3 +76,19 @@ xwr18xx is a radar sensor from Texas Instruments. It has a 77GHz radar and a tem
 | trigger_delay     | Trigger delay in ns       | 100          | No (*)   |
 
 (*) Yes if trigger bool is true
+
+#### If multiiple USB devices are connected:
+create a udev rule:
+
+find serial_nr:
+
+```
+/bin/udevadm info --name=/dev/ttyUSB0 | grep SERIAL_SHORT
+# use the SERIAL for the rule in: /etc/udev/rules.d/99-radar_rule.rules
+
+SUBSYSTEM=="tty", ENV{ID_SERIAL_SHORT}=="SERIAL", ENV{ID_USB_INTERFACE_NUM}=="00", SYMLINK+="radar0"
+SUBSYSTEM=="tty", ENV{ID_SERIAL_SHORT}=="SERIAL", ENV{ID_USB_INTERFACE_NUM}=="01", SYMLINK+="radar1"
+
+reload: sudo udevadm control --reload-rules
+
+```

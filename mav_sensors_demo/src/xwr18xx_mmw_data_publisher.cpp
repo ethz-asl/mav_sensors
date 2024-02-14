@@ -38,8 +38,8 @@ class Xwr18XxMmwDemoNode {
       auto pkg_directory = current_file_path.substr(0, src_idx);
       cfg.set("path_cfg_file", pkg_directory + "/cfg/radar/" + radar_config);
     }
-    cfg.set("path_cfg", "/dev/ttyUSB0");
-    cfg.set("path_data", "/dev/ttyUSB1");
+    cfg.set("path_cfg", "/dev/radar0");
+    cfg.set("path_data", "/dev/radar1");
     cfg.set("trigger", "true");
     cfg.set("trigger_delay", "500");  // in ns
     cfg.set("trigger_gpio", "389");
