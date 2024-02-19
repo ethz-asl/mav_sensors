@@ -9,6 +9,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>lpp</depend>
   <depend>roscpp</depend>
+  <depend>roslib</depend>
   <depend>mav_sensors_core</depend>
   <depend>mav_sensors_drivers</depend>
 </package>

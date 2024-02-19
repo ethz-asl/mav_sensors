@@ -2,13 +2,17 @@
 // Created by haumarco on 13.02.24.
 //
 
+#include <chrono>
+#include <ctime>
+#include <fstream>
+
 #include <log++.h>
+#include <ros/package.h>
+#include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include "mav_sensors_core/sensor_config.h"
 #include "mav_sensors_drivers/radar/xwr18xx_mmw_demo.h"
-
-#include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
 
 using namespace mav_sensors;
 
@@ -16,7 +20,6 @@ class Xwr18XxMmwDemoNode {
  public:
   Xwr18XxMmwDemoNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
       : nh_(nh), nh_private_(nh_private) {}
-
 
   std::unique_ptr<Xwr18XxMmwDemo> radar_;
 
@@ -32,6 +35,18 @@ class Xwr18XxMmwDemoNode {
       LOG(F, "Failed to get radar_config param.");
       return;
     }
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+    std::tm* timeInfo = std::localtime(&currentTime);
+    char buffer[20];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H-%M-%S", timeInfo);
+    std::string path = ros::package::getPath("mav_sensors_demo");
+    path += "/radar_config_log.txt";
+    std::ofstream outfile;
+    outfile.open(path, std::ios_base::app);
+    outfile << buffer << " " << radar_config << std::endl;
+    outfile.close();
 
     size_t src_idx = current_file_path.rfind(std::string("/src/"));
     if (src_idx != std::string::npos) {
@@ -52,21 +67,17 @@ class Xwr18XxMmwDemoNode {
     }
     double poll_rate = 10.0;
 
-    ros::Timer timer_ = nh_private_.createTimer(ros::Duration(1.0 / poll_rate), [this](const ros::TimerEvent& event) {
-        timerCallback(event);
-    });
+    ros::Timer timer_ =
+        nh_private_.createTimer(ros::Duration(1.0 / poll_rate),
+                                [this](const ros::TimerEvent& event) { timerCallback(event); });
     ros::spin();
     radar_->close();
   }
 
  private:
   void timerCallback(const ros::TimerEvent& event) {
-    // auto time1 = ros::Time::now().toSec();
     auto measurement = radar_->read();
-    // LOG(I, "timed " << ros::Time::now().toSec()- time1);
-    // LOG(I, "Unix stamp: " << std::get<Radar>(measurement).unix_stamp_ns);
-    // LOG(I, "Hardware stamp: " << std::get<Radar>(measurement).hardware_stamp);
-    LOG(I, "Number of detections: " << std::get<Radar>(measurement).cfar_detections.size());
+    // LOG(I, "Number of detections: " << std::get<Radar>(measurement).cfar_detections.size());
     publish_pointcloud(measurement);
     return;
   }
@@ -120,50 +131,42 @@ class Xwr18XxMmwDemoNode {
     msg.is_dense = true;
 
     msg.data.resize(msg.row_step * msg.height);
-    for (size_t i = 0;
-        i < std::get<Radar>(measurement).cfar_detections.size(); i++) {
+    for (size_t i = 0; i < std::get<Radar>(measurement).cfar_detections.size(); i++) {
       char x[sizeof(float)];
-      memcpy(x, &std::get<Radar>(measurement).cfar_detections[i].x,
-            sizeof(float));
+      memcpy(x, &std::get<Radar>(measurement).cfar_detections[i].x, sizeof(float));
       msg.data[i * msg.point_step + msg.fields[0].offset + 0] = x[0];
       msg.data[i * msg.point_step + msg.fields[0].offset + 1] = x[1];
       msg.data[i * msg.point_step + msg.fields[0].offset + 2] = x[2];
       msg.data[i * msg.point_step + msg.fields[0].offset + 3] = x[3];
 
       char y[sizeof(float)];
-      memcpy(y, &std::get<Radar>(measurement).cfar_detections[i].y,
-            sizeof(float));
+      memcpy(y, &std::get<Radar>(measurement).cfar_detections[i].y, sizeof(float));
       msg.data[i * msg.point_step + msg.fields[1].offset + 0] = y[0];
       msg.data[i * msg.point_step + msg.fields[1].offset + 1] = y[1];
       msg.data[i * msg.point_step + msg.fields[1].offset + 2] = y[2];
       msg.data[i * msg.point_step + msg.fields[1].offset + 3] = y[3];
 
       char z[sizeof(float)];
-      memcpy(z, &std::get<Radar>(measurement).cfar_detections[i].z,
-            sizeof(float));
+      memcpy(z, &std::get<Radar>(measurement).cfar_detections[i].z, sizeof(float));
       msg.data[i * msg.point_step + msg.fields[2].offset + 0] = z[0];
       msg.data[i * msg.point_step + msg.fields[2].offset + 1] = z[1];
       msg.data[i * msg.point_step + msg.fields[2].offset + 2] = z[2];
       msg.data[i * msg.point_step + msg.fields[2].offset + 3] = z[3];
 
       char doppler[sizeof(float)];
-      memcpy(doppler,
-            &std::get<Radar>(measurement).cfar_detections[i].velocity,
-            sizeof(float));
+      memcpy(doppler, &std::get<Radar>(measurement).cfar_detections[i].velocity, sizeof(float));
       msg.data[i * msg.point_step + msg.fields[3].offset + 0] = doppler[0];
       msg.data[i * msg.point_step + msg.fields[3].offset + 1] = doppler[1];
       msg.data[i * msg.point_step + msg.fields[3].offset + 2] = doppler[2];
       msg.data[i * msg.point_step + msg.fields[3].offset + 3] = doppler[3];
 
       char snr[sizeof(int16_t)];
-      memcpy(snr, &std::get<Radar>(measurement).cfar_detections[i].snr,
-            sizeof(int16_t));
+      memcpy(snr, &std::get<Radar>(measurement).cfar_detections[i].snr, sizeof(int16_t));
       msg.data[i * msg.point_step + msg.fields[4].offset + 0] = snr[0];
       msg.data[i * msg.point_step + msg.fields[4].offset + 1] = snr[1];
 
       char noise[sizeof(int16_t)];
-      memcpy(noise, &std::get<Radar>(measurement).cfar_detections[i].noise,
-            sizeof(int16_t));
+      memcpy(noise, &std::get<Radar>(measurement).cfar_detections[i].noise, sizeof(int16_t));
       msg.data[i * msg.point_step + msg.fields[5].offset + 0] = noise[0];
       msg.data[i * msg.point_step + msg.fields[5].offset + 1] = noise[1];
     }

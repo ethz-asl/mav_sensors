@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   mav_sensors_core
   mav_sensors_drivers
   roscpp
+  roslib
 )
 
 catkin_package(
