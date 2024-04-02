@@ -1,3 +1,5 @@
+// Copyright (c) 2024 ETH Zurich, Autonomous Systems Lab, Mariano Biasio, Rik Girod
+
 //
 // Created by brik on 01.07.23.
 //

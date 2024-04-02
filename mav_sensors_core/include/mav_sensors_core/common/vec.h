@@ -1,3 +1,5 @@
+// Copyright (c) 2024 ETH Zurich, Autonomous Systems Lab, Mariano Biasio, Rik Girod
+
 //
 // Created by acey on 07.07.23.
 //

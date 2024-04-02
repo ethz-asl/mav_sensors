@@ -1,3 +1,5 @@
+// Copyright (c) 2024 ETH Zurich, Autonomous Systems Lab, Mariano Biasio, Rik Girod
+
 #include "mav_sensors_core/protocols/Serial.h"
 
 #include <fcntl.h>

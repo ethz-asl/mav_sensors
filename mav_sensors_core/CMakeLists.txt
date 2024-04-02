@@ -1,3 +1,5 @@
+# Copyright (c) 2024 ETH Zurich, Autonomous Systems Lab, Mariano Biasio, Rik Girod
+
 cmake_minimum_required(VERSION 3.0.2)
 project(mav_sensors_core)
 
