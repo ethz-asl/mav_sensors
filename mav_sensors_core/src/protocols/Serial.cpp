@@ -1,9 +1,9 @@
-#include "mav_sensors_core/protocols/Serial.h"
-
 #include <fcntl.h>
 
 #include <log++.h>
 #include <sys/ioctl.h>
+
+#include "mav_sensors_core/protocols/Serial.h"
 
 // A linux user space serial driver class.
 
@@ -19,7 +19,7 @@ void Serial::setPath(std::string path) { path_ = std::move(path); }
 const std::string& Serial::getPath() const { return path_; }
 
 bool Serial::open() {
-  fd_ = ::open(path_.c_str(), O_RDWR);
+  fd_ = ::open(path_.c_str(), O_RDWR | O_NOCTTY);
   if (fd_ < 0) {
     LOG(E, "Error on Serial open: " << strerror(errno));
     return false;
@@ -60,7 +60,7 @@ ssize_t Serial::read(void* data, size_t len_data) const {
 ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t v_time) const {
   struct termios2 tty {};
   if (::ioctl(fd_, TCGETS2, &tty) < 0) {
-    LOG(E, "Error on TCGETS2 for read: " << strerror(errno));
+    LOG_TIMED(E, 1, "Error on TCGETS2 for read: " << strerror(errno));
     return -1;
   }
 
@@ -71,7 +71,7 @@ ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t v_time)
   tty.c_cc[VMIN] = v_min;
 
   if (::ioctl(fd_, TCSETS2, &tty) < 0) {
-    LOG(E, "Error on TCSETS2 for read: " << strerror(errno));
+    LOG_TIMED(E, 1.0, "Error on TCSETS2 for read: " << strerror(errno));
     return -1;
   }
 
@@ -81,7 +81,7 @@ ssize_t Serial::read(void* data, size_t len_data, uint8_t v_min, uint8_t v_time)
   tty.c_cc[VMIN] = old_cc_vmin;
 
   if (::ioctl(fd_, TCSETS2, &tty) < 0) {
-    LOG(E, "Error on TCSETS2 for read: " << strerror(errno));
+    LOG_TIMED(E, 1.0, "Error on TCSETS2 for read: " << strerror(errno));
     return -1;
   }
 
@@ -437,7 +437,7 @@ bool Serial::close() {
 int Serial::available() const {
   int bytes_available = 0;
   if (::ioctl(fd_, FIONREAD, &bytes_available) < 0) {
-    LOG(E, "Error on FIONREAD: " << strerror(errno));
+    LOG_TIMED(E, 1.0, "Error on FIONREAD: " << strerror(errno));
     return -1;
   }
   return bytes_available;
