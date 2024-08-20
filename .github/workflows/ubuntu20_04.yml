@@ -48,7 +48,8 @@ jobs:
 
     - name: Build mav_sensors
       run: source /opt/ros/${{ matrix.rosdistro }}/setup.bash && catkin build mav_sensors && source ${GITHUB_WORKSPACE}/catkin_ws/devel/setup.bash
-
+      shell: bash
+      working-directory: catkin_ws
 
 
 
