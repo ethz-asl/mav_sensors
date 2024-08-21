@@ -15,6 +15,7 @@ jobs:
       matrix:
         rosdistro: ['noetic']
         gcc: ['8', '9', '10']
+        submodule: ['exclude', 'BMI08x-Sensor-API', 'BMP3-Sensor-API', 'all']
     container: ros:${{ matrix.rosdistro }}-ros-base-focal
     name: ROS ${{ matrix.rosdistro }} - GCC ${{ matrix.gcc }}
     steps:
@@ -45,8 +46,20 @@ jobs:
         token: ${{ secrets.PAT }}
         path: catkin_ws/src/mav_sensors
 
+    - name: Exclude submodules
+      if: matrix.submodule == 'exclude'
+      run: rm -rf mav_sensor_drivers/lib/*
+      shell: bash
+      working-directory: catkin_ws/src/mav_sensors
+
+    - name: Exclude submodules except ${{ matrix.submodule }}
+      if: matrix.submodule != 'exclude' && matrix.submodule != 'all'
+      run: find . -mindepth 1 -type d ! -name ${{ matrix.submodule }} -exec rm -rf {} +
+      working-directory: catkin_ws/src/mav_sensors/mav_sensor_drivers/lib
+      shell: bash
+
     - name: Build mav_sensors
-      run: source /opt/ros/${{ matrix.rosdistro }}/setup.bash && catkin build mav_sensors_demo && source ${GITHUB_WORKSPACE}/catkin_ws/devel/setup.bash
+      run: source /opt/ros/${{ matrix.rosdistro }}/setup.bash && catkin build -v mav_sensors_demo --no-status && source ${GITHUB_WORKSPACE}/catkin_ws/devel/setup.bash
       shell: bash
       working-directory: catkin_ws
 
