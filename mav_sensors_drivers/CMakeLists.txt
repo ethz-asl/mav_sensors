@@ -9,12 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
         mav_sensors_core
 )
 
-catkin_package(
-  INCLUDE_DIRS include lib/BMP3-Sensor-API lib/BMI08x-Sensor-API
-  LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_BMP3 ${PROJECT_NAME}_BMI08x
-  CATKIN_DEPENDS roscpp lpp mav_sensors_core
-)
-
 add_compile_definitions(MODE_LPP)
 
 ###########
@@ -38,6 +32,12 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lib/BMI08x-Sensor-API/)
 else()
     message(WARNING "BMI08x-Sensor-API not found. BMI08x sensor will not be supported.")
 endif()
+
+catkin_package(
+        INCLUDE_DIRS include ${MAV_SENSORS_OPTIONAL_INCLUDE_DIRS}
+        LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_BMP3 ${PROJECT_NAME}_BMI08x
+        CATKIN_DEPENDS roscpp lpp mav_sensors_core
+)
 
 include_directories(
  include
