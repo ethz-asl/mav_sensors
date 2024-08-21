@@ -17,7 +17,7 @@ jobs:
         gcc: ['8', '9', '10']
         submodule: ['exclude', 'BMI08x-Sensor-API', 'BMP3-Sensor-API', 'all']
     container: ros:${{ matrix.rosdistro }}-ros-base-focal
-    name: ROS ${{ matrix.rosdistro }} - GCC ${{ matrix.gcc }}
+    name: ROS ${{ matrix.rosdistro }} - GCC ${{ matrix.gcc }} - Submodule ${{ matrix.submodule }}
     steps:
     - uses: actions/checkout@v4
       name: Checkout lpp
