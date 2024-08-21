@@ -48,14 +48,14 @@ jobs:
 
     - name: Exclude submodules
       if: matrix.submodule == 'exclude'
-      run: rm -rf mav_sensor_drivers/lib/*
+      run: rm -rf mav_sensors_drivers/lib/*
       shell: bash
       working-directory: catkin_ws/src/mav_sensors
 
     - name: Exclude submodules except ${{ matrix.submodule }}
       if: matrix.submodule != 'exclude' && matrix.submodule != 'all'
       run: find . -mindepth 1 -type d ! -name ${{ matrix.submodule }} -exec rm -rf {} +
-      working-directory: catkin_ws/src/mav_sensors/mav_sensor_drivers/lib
+      working-directory: catkin_ws/src/mav_sensors/mav_sensors_drivers/lib
       shell: bash
 
     - name: Build mav_sensors
