@@ -29,8 +29,12 @@ include_directories(
 add_executable(${PROJECT_NAME}_xwr18xx_mmw_demo src/xwr18xx_mmw_demo_node.cpp)
 target_link_libraries(${PROJECT_NAME}_xwr18xx_mmw_demo ${catkin_LIBRARIES})
 
+if (MAV_SENSORS_BMI08X_SUPPORT)
 add_executable(${PROJECT_NAME}_bmi088_demo src/bmi088_demo.cpp)
 target_link_libraries(${PROJECT_NAME}_bmi088_demo ${catkin_LIBRARIES})
+endif ()
 
+if (MAV_SENSORS_BMP3_SUPPORT)
 add_executable(${PROJECT_NAME}_bmp390_demo src/bmp390_demo.cpp)
 target_link_libraries(${PROJECT_NAME}_bmp390_demo ${catkin_LIBRARIES})
+endif ()

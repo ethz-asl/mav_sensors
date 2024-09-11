@@ -1,0 +1,67 @@
+name: mav_sensors
+on:
+  pull_request:
+    branches:
+      - "master"
+  push:
+    branches:
+      - "master"
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro: ['noetic']
+        gcc: ['8', '9', '10']
+        submodule: ['exclude', 'BMI08x-Sensor-API', 'BMP3-Sensor-API', 'all']
+    container: ros:${{ matrix.rosdistro }}-ros-base-focal
+    name: GCC ${{ matrix.gcc }} - Submodule ${{ matrix.submodule }} - ROS ${{ matrix.rosdistro }}
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout lpp
+      with:
+        repository: ethz-asl/lpp
+        token: ${{ secrets.PAT }}
+        path: catkin_ws/src/lpp
+
+    - name: Install newest git version
+      run: sudo apt update && sudo apt-get install -y software-properties-common && sudo add-apt-repository -y ppa:git-core/ppa && sudo apt-get update && sudo apt-get install -y git
+
+    - name: Install GCC version ${{ matrix.gcc }}
+      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.gcc }} 100 --slave /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc }} && gcc --version && g++ --version
+
+    - name: Install catkin tools
+      run: sudo apt install -y python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-catkin-tools
+
+    - name: Install system dependencies
+      run: sudo apt install -y libgoogle-glog-dev
+
+    - uses: actions/checkout@v4
+      name: Checkout mav_sensors
+      with:
+        repository: ethz-asl/mav_sensors
+        submodules: recursive
+        token: ${{ secrets.PAT }}
+        path: catkin_ws/src/mav_sensors
+
+    - name: Exclude submodules
+      if: matrix.submodule == 'exclude'
+      run: rm -rf mav_sensors_drivers/lib/*
+      shell: bash
+      working-directory: catkin_ws/src/mav_sensors
+
+    - name: Exclude submodules except ${{ matrix.submodule }}
+      if: matrix.submodule != 'exclude' && matrix.submodule != 'all'
+      run: find . -mindepth 1 -type d ! -name ${{ matrix.submodule }} -exec rm -rf {} +
+      working-directory: catkin_ws/src/mav_sensors/mav_sensors_drivers/lib
+      shell: bash
+
+    - name: Build mav_sensors
+      run: source /opt/ros/${{ matrix.rosdistro }}/setup.bash && catkin build -v mav_sensors_demo --no-status && source ${GITHUB_WORKSPACE}/catkin_ws/devel/setup.bash
+      shell: bash
+      working-directory: catkin_ws
+
+
+
