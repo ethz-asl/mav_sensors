@@ -1,0 +1,54 @@
+name: mav_sensors
+on:
+  pull_request:
+    branches:
+      - "master"
+  push:
+    branches:
+      - "master"
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro: ['noetic']
+        gcc: ['8', '9', '10']
+    container: ros:${{ matrix.rosdistro }}-ros-base-focal
+    name: ROS ${{ matrix.rosdistro }} - GCC ${{ matrix.gcc }}
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout lpp
+      with:
+        repository: ethz-asl/lpp
+        token: ${{ secrets.PAT }}
+        path: catkin_ws/src/lpp
+
+    - name: Install newest git version
+      run: sudo apt update && sudo apt-get install -y software-properties-common && sudo add-apt-repository -y ppa:git-core/ppa && sudo apt-get update && sudo apt-get install -y git
+
+    - name: Install GCC version ${{ matrix.gcc }}
+      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.gcc }} 100 --slave /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc }} && gcc --version && g++ --version
+
+    - name: Install catkin tools
+      run: sudo apt install -y python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-catkin-tools
+
+    - name: Install system dependencies
+      run: sudo apt install -y libgoogle-glog-dev
+
+    - uses: actions/checkout@v4
+      name: Checkout mav_sensors
+      with:
+        repository: ethz-asl/mav_sensors
+        submodules: recursive
+        token: ${{ secrets.PAT }}
+        path: catkin_ws/src/mav_sensors
+
+    - name: Build mav_sensors
+      run: source /opt/ros/${{ matrix.rosdistro }}/setup.bash && catkin build mav_sensors_demo && source ${GITHUB_WORKSPACE}/catkin_ws/devel/setup.bash
+      shell: bash
+      working-directory: catkin_ws
+
+
+
